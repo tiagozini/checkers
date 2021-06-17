@@ -18,3 +18,9 @@ export const Directions = {
   RIGHT_UP : 'right-up',
   RIGHT_DOWN : 'right-down'
 }
+
+export const PossibleMoveType = {
+  NO_MOVE : 0,
+  LAST_MOVE : 1,
+  PARTIAL_MOVE : 2
+}

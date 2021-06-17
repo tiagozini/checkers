@@ -34,6 +34,6 @@ export default function Piece(props) {
       fontWeight: 'bold',
       cursor: 'move',
     }}
-    src={url} width="30px"
+    src={url} width="50px"
   />
 }

@@ -9,17 +9,34 @@ import { useDrag } from 'react-dnd';
 export default function Piece(props) {
   const type = props.type;
   const color = props.color;
-  let url = null;
+  const draggable = props.canDrag;
 
+  let url = null;
  
   const [{isDragging}, drag] = useDrag(() => ({
     type: ItemTypes.PIECE,
     item: { xFrom : props.xFrom, yFrom : props.yFrom, color: props.color, type: props.type},
-    canDrag: props.canDrag,
+    canDrag: ((monitor) => {
+      return draggable;
+    }),
     collect: monitor => ({
-      isDragging: !!monitor.isDragging()
+      isDragging: !!monitor.isDragging(),
+      canDrag: !!monitor.canDrag()
     }),
   }));
+
+  const getStyle = (d) => {
+    let style = {
+      opacity: isDragging ? 0.5 : 1,
+      fontSize: 25,
+      fontWeight: 'bold',
+      cursor: 'move',
+    };
+    if (draggable) {
+      style.backgroundColor="pink";
+    }   
+    return style; 
+  };
 
   if (PieceTypes.SIMPLE === type) {
     url = (color === ColorTypes.WHITE ? imgPieceWhite : imgPieceBlack);
@@ -28,12 +45,7 @@ export default function Piece(props) {
   }   
   return <img
     ref={drag} alt=""
-    style={{
-      opacity: isDragging ? 0.5 : 1,
-      fontSize: 25,
-      fontWeight: 'bold',
-      cursor: 'move',
-    }}
+    style={getStyle(drag)}
     src={url} width="50px"
   />
 }

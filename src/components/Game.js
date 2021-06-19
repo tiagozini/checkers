@@ -2,7 +2,7 @@ import React from 'react';
 import { Board } from './Board';
 import { PiecePossibleMoves } from '../models/PiecePossibleMoves';
 
-import { ColorTypes, PieceTypes, PossibleMoveType } from '../Constants';
+import { ColorTypes, PieceTypes, PossibleMoveType, PlayerName } from '../Constants';
 
 export class Game extends React.Component {
     constructor(props) {
@@ -25,6 +25,8 @@ export class Game extends React.Component {
         this.getMovesSimplePiece = this.getMovesSimplePiece.bind(this);
         this.getMovesTakePieces = this.getMovesTakePieces.bind(this);
         this.getDoubleMovesTakePieces = this.getDoubleMovesTakePieces.bind(this);
+        this.handleCanDragPiece = this.handleCanDragPiece.bind(this);
+        this.updatePossibleMoves = this.updatePossibleMoves.bind(this);
     }    
 
     clearPossibleMoves() {
@@ -444,10 +446,10 @@ export class Game extends React.Component {
     checkMovePossibility(color) {
         for(let position =0; position <64; position++) {
             const piece = this.state.pieces[position];
+            const [xFrom, yFrom] = [position % 8, Math.trunc(position/8)];
             if (piece == null) {
                 continue;
             }
-            const [xFrom, yFrom] = [position % 8, Math.trunc(position/8)];
             let item = { xFrom : xFrom, yFrom: yFrom, color: piece.color, type: piece.type}
             if (piece != null && piece.color === color) {
                 if (this.possibleMoves[position] == null) {
@@ -513,6 +515,56 @@ export class Game extends React.Component {
         }
     }
 
+    handleCanDragPiece(piece) {
+        if (piece != null && (
+            (this.state.whiteIsNext && ColorTypes.WHITE === piece.color) ||
+            (!this.state.whiteIsNext && ColorTypes.BLACK === piece.color)
+        )) {
+            const position = this.getPosition(piece.xFrom, piece.yFrom);
+            return this.possibleMoves[position] != null && 
+                this.possibleMoves[position].length > 0;
+        }
+        return false;
+    }    
+
+    updatePossibleMoves() {
+        let maxTakePiecesPossible = 0;
+        for(let position = 0; position < 64; position++) {
+            const piece = this.state.pieces[position];
+            if (piece!= null) {
+                const [xFrom, yFrom] = [position % 8, Math.trunc(position / 8)];
+                let item = { xFrom : xFrom, 
+                    yFrom: yFrom, 
+                    color: piece.color, 
+                    type: piece.type
+                };
+                if ((this.state.whiteIsNext && piece.color != ColorTypes.WHITE) ||
+                    (!this.state.whiteIsNext && piece.color != ColorTypes.BLACK)) {
+                    continue;
+                }
+                if (item.type === PieceTypes.SIMPLE) 
+                    this.possibleMoves[position] = this.getMovesSimplePiece(item);
+                else
+                    this.possibleMoves[position] = this.getDoubleMovesPiece(item);            
+                for (let ppm of this.possibleMoves[position]) {
+                    maxTakePiecesPossible = Math.max(maxTakePiecesPossible, 
+                        ppm.piecesTaked.length);
+                }
+            }            
+        }       
+        if (maxTakePiecesPossible > 0) {
+            const possibleMoves = this.possibleMoves.slice(); 
+            for(let position = 0; position < 64; position++) {
+                const piece = this.state.pieces[position];
+                if (piece != null && possibleMoves[position] != null) {
+                    possibleMoves[position] = possibleMoves[position].filter((ppm) => 
+                        (ppm.piecesTaked.length == maxTakePiecesPossible)) || [];
+                }
+            }
+            this.possibleMoves = possibleMoves;                
+        }
+    }
+
     render() {
         const winner = this.getTheWinner();
         let status;
@@ -522,6 +574,7 @@ export class Game extends React.Component {
         } else {
           status = 'Next player: ' + (this.state.whiteIsNext ? 'White' : 'Black');
         }
+        this.updatePossibleMoves();
         return  <div className="game">
             <div className="game-board">
                 <Board 
@@ -529,8 +582,9 @@ export class Game extends React.Component {
                 handleMovePiece={this.handleMovePiece}
                 handleCanMovePiece={this.handleCanMovePiece}
                 handlePrepareNextPlay={this.handlePrepareNextPlay}
+                handleCanDragPiece={this.handleCanDragPiece}
                 pieces={this.state.pieces}
-                count={this.state.count} />
+                />
             </div>
             <div className="game-info">
                 <div>{status}</div>
@@ -571,15 +625,15 @@ export class Game extends React.Component {
             }
         }
         if (blacksCount === 0) {
-            return 'White';
+            return PlayerName.WHITE;
         }
         if (whitesCount === 0) {
-            return 'Black';
+            return PlayerName.BLACK;
         }        
         if (this.state.whiteIsNext && !this.checkMovePossibility(ColorTypes.WHITE)) {
-            return 'Black';
+            return PlayerName.BLACK;
         } else if (!this.state.whiteIsNext && !this.checkMovePossibility(ColorTypes.BLACK)) {
-            return 'White';                
+            return PlayerName.WHITE;                
         }
     }
 }

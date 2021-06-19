@@ -4,7 +4,6 @@ import Piece from './Piece';
 
 import { DndProvider } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import { ColorTypes } from '../Constants';
 
 export class Board extends React.Component {
     constructor(props) {
@@ -15,6 +14,7 @@ export class Board extends React.Component {
         }
         this.movePiece = props.handleMovePiece.bind(this);
         this.handleCanMovePiece = props.handleCanMovePiece.bind(this);
+        this.handleCanDragPiece = props.handleCanDragPiece.bind(this);
     }    
 
     renderSquare(position) {
@@ -25,15 +25,19 @@ export class Board extends React.Component {
             handleMovePiece={this.movePiece}
             handleCanMovePiece={this.handleCanMovePiece}
             whiteIsNext={this.props.whiteIsNext}
+            count={this.props.count}
             piece={piece} >
             {piece != null && <Piece color={piece.color} 
                 type={piece.type} 
                 xFrom={position % 8}
                 yFrom ={Math.trunc(position / 8)}
-                canDrag={piece != null && (
-                    (this.props.whiteIsNext && ColorTypes.WHITE === piece.color) ||
-                    (!this.props.whiteIsNext && ColorTypes.BLACK === piece.color)
-                 ) } 
+                canDrag={this.handleCanDragPiece(
+                    {
+                        xFrom : position % 8, 
+                        yFrom : Math.trunc(position / 8), 
+                        color: piece.color, 
+                        type: piece.type}
+                )} 
                 />}
         </BoardSquare>
         </div>;

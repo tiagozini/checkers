@@ -1,5 +1,5 @@
 import React from 'react';
-import { ColorTypes } from '../Constants';
+import { ColorCss } from '../Constants';
 
 export class Square extends React.Component {
     constructor(props) {
@@ -20,7 +20,7 @@ export class Square extends React.Component {
         const posicaoInt = Number.parseInt(this.props.position, 10);
         const lineNumberRest = Math.trunc((posicaoInt) / 8);
         const even = ((lineNumberRest + posicaoInt) % 2) === 0;
-        const bgColor = even ? ColorTypes.WHITE : ColorTypes.BLACK ;
+        const bgColor = even ? ColorCss.WHITE : ColorCss.GRAY; //ColorTypes.BLACK ;
         const piece = this.state.piece;
         if (piece != null) {
             return (

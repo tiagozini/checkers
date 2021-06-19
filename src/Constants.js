@@ -3,6 +3,11 @@ export const ColorTypes = {
   BLACK: 'black'  
 }
 
+export const PlayerName = {
+  WHITE: 'White',
+  BLACK: 'Black'  
+}
+
 export const PieceTypes = {
   DOUBLE: 'double-piece',
   SIMPLE: 'simple-piece'  
@@ -17,6 +22,11 @@ export const Directions = {
   LEFT_DOWN : 'left-down',
   RIGHT_UP : 'right-up',
   RIGHT_DOWN : 'right-down'
+}
+
+export const ColorCss = {
+  WHITE : 'white',
+  GRAY: "#aaaaaa"
 }
 
 export const PossibleMoveType = {

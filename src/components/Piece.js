@@ -5,6 +5,7 @@ import imgDoublePieceWhite from '../img/double-piece-white.png';
 import imgDoublePieceBlack from '../img/double-piece-black.png';
 import { ColorTypes, PieceTypes, ItemTypes } from '../Constants';
 import { useDrag } from 'react-dnd';
+import { PieceDraggable } from '../models/PieceDraggable';
 
 export default function Piece(props) {
   const type = props.type;
@@ -15,7 +16,7 @@ export default function Piece(props) {
  
   const [{isDragging}, drag] = useDrag(() => ({
     type: ItemTypes.PIECE,
-    item: { xFrom : props.xFrom, yFrom : props.yFrom, color: props.color, type: props.type},
+    item: new PieceDraggable(props.color, props.type, props.xFrom, props.yFrom),
     canDrag: ((monitor) => {
       return draggable;
     }),

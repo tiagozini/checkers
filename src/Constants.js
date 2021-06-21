@@ -3,7 +3,7 @@ export const ColorTypes = {
   BLACK: 'black'  
 }
 
-export const PlayerName = {
+export const PlayerNames = {
   WHITE: 'White',
   BLACK: 'Black'  
 }
@@ -17,7 +17,7 @@ export const ItemTypes = {
   PIECE: 'piece'
 }
 
-export const Directions = {
+export const DiagonalTypes = {
   LEFT_UP : 'left-up',
   LEFT_DOWN : 'left-down',
   RIGHT_UP : 'right-up',

@@ -27,9 +27,9 @@ export default function BoardSquare(props) {
    * true when is possible to move
    * undefined when is possible, but not as final position, just as part of trajetory
    */
-  function canMovePiece(item, xTo, yTo) {
-    if (props.piece == null && item !=null) {
-      const codCanMove = props.handleCanMovePiece(item, xTo, yTo);
+  function canMovePiece(pieceDraggable, xTo, yTo) {
+    if (props.piece == null && pieceDraggable !=null) {
+      const codCanMove = props.handleCanMovePiece(pieceDraggable, xTo, yTo);
       if (codCanMove == PossibleMoveType.PARTIAL_MOVE) {
         return undefined;
       }
@@ -40,8 +40,9 @@ export default function BoardSquare(props) {
 
   const [{ isOver, canDrop  }, drop] = useDrop(() => ({
     accept: ItemTypes.PIECE,
-    drop: (item, monitor) => movePiece(item.xFrom, item.yFrom, x, y),
-    canDrop: (item, monitor) => canMovePiece(item, x, y),
+    drop: (pieceDraggable, monitor) => movePiece(pieceDraggable.xFrom, 
+      pieceDraggable.yFrom, x, y),
+    canDrop: (pieceDraggable, monitor) => canMovePiece(pieceDraggable, x, y),
     collect: (monitor) => ({
       isOver: !!monitor.isOver(),
       canDrop: monitor.canDrop()

@@ -1,6 +1,9 @@
 # Getting Started with Checkers
 
 This project is about the game Checkers and it´s created using React. 
+![Tela do Jogo](https://github.com/tiagozini/checkers/blob/main/src/img/game-snapshot.png)
+## Play the game
+Play the game online in [here](https://checkers-game-in-react.herokuapp.com).
 
 ## Available Scripts
 

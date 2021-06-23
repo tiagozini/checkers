@@ -1,7 +1,7 @@
 import React from 'react';
 import BoardSquare from './BoardSquare';
 import Piece from './Piece';
-import { PieceDraggable } from '../models/PieceDraggable';
+import { PositionedPiece } from '../models/PositionedPiece';
 
 import { DndProvider } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -32,10 +32,9 @@ export class Board extends React.Component {
                 piece={piece} >
                 {piece != null && <Piece color={piece.color} 
                     type={piece.type} 
-                    xFrom={position % this.props.numRowsByLine}
-                    yFrom ={Math.trunc(position / this.props.numRowsByLine)}
-                    canDrag={this.handleCanDragPiece(new PieceDraggable(piece.color, piece.type,
-                        position % this.props.numRowsByLine, Math.trunc(position / this.props.numRowsByLine)))}
+                    position={position}
+                    canDrag={this.handleCanDragPiece(new PositionedPiece(piece.color, piece.type,
+                        position))}
                     />}
             </BoardSquare>
         </div>

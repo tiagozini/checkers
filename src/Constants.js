@@ -9,8 +9,8 @@ export const PlayerNames = {
 }
 
 export const PieceTypes = {
-  DOUBLE: 'double-piece',
-  SIMPLE: 'simple-piece'  
+  KING: 'KING',
+  MAN: 'MAN'  
 }  
 
 export const ItemTypes = {

@@ -1,11 +1,11 @@
 import React from 'react'
-import imgPieceWhite from '../img/piece-white.png';
-import imgPieceBlack from '../img/piece-black.png';
-import imgDoublePieceWhite from '../img/double-piece-white.png';
-import imgDoublePieceBlack from '../img/double-piece-black.png';
-import { ColorTypes, PieceTypes, ItemTypes } from '../Constants';
 import { useDrag } from 'react-dnd';
-import { PieceDraggable } from '../models/PieceDraggable';
+import { PositionedPiece } from '../models/PositionedPiece';
+import { ColorTypes, PieceTypes, ItemTypes } from '../Constants';
+import imgPieceManWhite from '../img/piece-man-white.png';
+import imgPieceManBlack from '../img/piece-man-black.png';
+import imgPieceKingWhite from '../img/piece-king-white.png';
+import imgPieceKingBlack from '../img/piece-king-black.png';
 
 export default function Piece(props) {
   const type = props.type;
@@ -16,7 +16,7 @@ export default function Piece(props) {
  
   const [{isDragging}, drag] = useDrag(() => ({
     type: ItemTypes.PIECE,
-    item: new PieceDraggable(props.color, props.type, props.xFrom, props.yFrom),
+    item: new PositionedPiece(props.color, props.type, props.position),
     canDrag: ((monitor) => {
       return draggable;
     }),
@@ -39,10 +39,10 @@ export default function Piece(props) {
     return style; 
   };
 
-  if (PieceTypes.SIMPLE === type) {
-    url = (color === ColorTypes.WHITE ? imgPieceWhite : imgPieceBlack);
-  } else if (PieceTypes.DOUBLE === type) {
-    url = (color === ColorTypes.WHITE ? imgDoublePieceWhite : imgDoublePieceBlack);
+  if (PieceTypes.MAN === type) {
+    url = (color === ColorTypes.WHITE ? imgPieceManWhite : imgPieceManBlack);
+  } else if (PieceTypes.KING === type) {
+    url = (color === ColorTypes.WHITE ? imgPieceKingWhite : imgPieceKingBlack);
   }   
   return <img
     ref={drag} alt=""

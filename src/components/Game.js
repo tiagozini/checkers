@@ -1,8 +1,8 @@
 import React from 'react';
-import { Board } from './Board';
-import { PiecePossibleMoves } from '../models/PiecePossibleMoves';
 import { Piece } from '../models/Piece';
-import { PieceDraggable } from '../models/PieceDraggable';
+import { PiecePossibleMoves } from '../models/PiecePossibleMoves';
+import { PositionedPiece } from '../models/PositionedPiece';
+import { Board } from './Board';
 
 import { ColorTypes, PieceTypes, PossibleMoveType, PlayerNames, DiagonalTypes } from '../Constants';
 
@@ -26,20 +26,20 @@ export class Game extends React.Component {
             this.possibleMoves.push(null);
         }
 
-        this.handlePrepareNextPlay = this.handlePrepareNextPlay.bind(this);
+        this.getPieceQuantities = this.getPieceQuantities.bind(this);
         this.handleMovePiece = this.handleMovePiece.bind(this);
         this.handleCanMovePiece = this.handleCanMovePiece.bind(this);
-        this.getMovesSimplePiece = this.getMovesSimplePiece.bind(this);
-        this.getMovesTakePieces = this.getMovesTakePieces.bind(this);
-        this.getDoubleMovesTakePieces = this.getDoubleMovesTakePieces.bind(this);
+        this.getManMoves = this.getManMoves.bind(this);
+        this.getManCaptureMoves = this.getManCaptureMoves.bind(this);
+        this.getKingCaptureMoves = this.getKingCaptureMoves.bind(this);
         this.handleCanDragPiece = this.handleCanDragPiece.bind(this);
         this.updatePossibleMoves = this.updatePossibleMoves.bind(this);
         this.mountInitialPieces = this.mountInitialPieces.bind(this);
         this.getPosition = this.getPosition.bind(this);
         this.getXAndY = this.getXAndY.bind(this);
-        this.getDoubleNearMoves = this.getDoubleNearMoves.bind(this);
+        this.getKingNonCaptureMoves = this.getKingNonCaptureMoves.bind(this);
         this.isThePieceTurn = this.isThePieceTurn.bind(this);
-        this.canSimplePieceTakePieces = this.canSimplePieceTakePieces.bind(this);
+        this.canManCaptures = this.canManCaptures.bind(this);
         this.isThePieceTurn = this.isThePieceTurn.bind(this);
         this.filterMovesWithMaxTakenPieces = this.filterMovesWithMaxTakenPieces.bind(this);
     }
@@ -50,9 +50,9 @@ export class Game extends React.Component {
             const lineNumberRest = Math.trunc((i) / this.NUM_ROWS_BY_LINE);
             const even = ((lineNumberRest + i) % 2) === 0;
             if (i >= 0 && i < 24 && !even) {
-                pieces.push(new Piece(ColorTypes.WHITE, PieceTypes.SIMPLE));
+                pieces.push(new Piece(ColorTypes.WHITE, PieceTypes.MAN));
             } else if (i >= 40 && i < this.NUM_ROWS && !even) {
-                pieces.push(new Piece(ColorTypes.BLACK, PieceTypes.SIMPLE));
+                pieces.push(new Piece(ColorTypes.BLACK, PieceTypes.MAN));
             } else {
                 pieces.push(null);
             }
@@ -68,21 +68,25 @@ export class Game extends React.Component {
         return [position % this.NUM_ROWS_BY_LINE, Math.trunc(position / this.NUM_ROWS_BY_LINE)];
     }
 
+    getY(position) {
+        return Math.trunc(position / this.NUM_ROWS_BY_LINE);
+    }
+
     getDiagonalSize(x, y, diagonalType) {
         const [dxLeft, dxRight, dyUp, dyDown] = [x, 7 - x, y, 7 - y];
-        if (diagonalType == DiagonalTypes.LEFT_UP)
+        if (diagonalType === DiagonalTypes.LEFT_UP)
             return Math.min(dxLeft, dyUp);
-        else if (diagonalType == DiagonalTypes.LEFT_DOWN)
+        else if (diagonalType === DiagonalTypes.LEFT_DOWN)
             return Math.min(dxLeft, dyDown);
-        else if (diagonalType == DiagonalTypes.RIGHT_UP)
+        else if (diagonalType === DiagonalTypes.RIGHT_UP)
             return Math.min(dxRight, dyUp);
-        else if (diagonalType == DiagonalTypes.RIGHT_DOWN)
+        else if (diagonalType === DiagonalTypes.RIGHT_DOWN)
             return Math.min(dxRight, dyDown);
     }
 
-    getMovesTakePieces(pieceDraggable, moves, piecesTaken) {
+    getManCaptureMoves(positionedPiece, moves, piecesTaken) {
         const position = moves.length > 0 ? moves.slice(-1)[0] :
-            this.getPosition(pieceDraggable.xFrom, pieceDraggable.yFrom);
+            positionedPiece.position;
         const [x, y] = this.getXAndY(position);
         let upperMoves = [];
         for (let diagonalType of this.DIAGONAL_TYPES_LIST) {
@@ -92,12 +96,12 @@ export class Game extends React.Component {
                 this.getPosition(x + (2 * operationX), y +
                     (2 * operationY))];
             const size = this.getDiagonalSize(x, y, diagonalType);
-            if (size > 1 && this.canTakePiece(enemyPosition,
-                enemyPositionMoreOne, this.getOpositeColor(pieceDraggable.color))
+            if (size > 1 && this.canCapture(enemyPosition,
+                enemyPositionMoreOne, this.getOpositeColor(positionedPiece.color))
                 && piecesTaken.filter((positionTaken) =>
-                    positionTaken == enemyPosition).length === 0) {
+                    positionTaken === enemyPosition).length === 0) {
                 upperMoves.push(
-                    this.getMovesTakePieces(pieceDraggable,
+                    this.getManCaptureMoves(positionedPiece,
                         moves.concat(enemyPositionMoreOne),
                         piecesTaken.concat(enemyPosition))
                 );
@@ -116,7 +120,7 @@ export class Game extends React.Component {
         return ppmList;
     }
 
-    getDoubleNearMoves(position) {
+    getKingNonCaptureMoves(position) {
         const [xFrom, yFrom] = this.getXAndY(position);
         let positions = [];
         for (let diagonalType of this.DIAGONAL_TYPES_LIST) {
@@ -136,22 +140,22 @@ export class Game extends React.Component {
     }
 
     getDiagonalOperations(diagonalType) {
-        if (diagonalType == DiagonalTypes.LEFT_DOWN) {
+        if (diagonalType === DiagonalTypes.LEFT_DOWN) {
             return [-1, +1];
-        } else if (diagonalType == DiagonalTypes.RIGHT_DOWN) {
+        } else if (diagonalType === DiagonalTypes.RIGHT_DOWN) {
             return [+1, +1];
-        } else if (diagonalType == DiagonalTypes.LEFT_UP) {
+        } else if (diagonalType === DiagonalTypes.LEFT_UP) {
             return [-1, -1];
-        } else if (diagonalType == DiagonalTypes.RIGHT_UP) {
+        } else if (diagonalType === DiagonalTypes.RIGHT_UP) {
             return [+1, -1];
         }
     }
 
     getOpositeColor(color) {
-        return color == ColorTypes.WHITE ? ColorTypes.BLACK : ColorTypes.WHITE;
+        return color === ColorTypes.WHITE ? ColorTypes.BLACK : ColorTypes.WHITE;
     }
 
-    getDoubleDiagonalTakePiecesMoves(xFrom, yFrom, opositeColor, size, diagonalType, piecesTaken) {
+    getKingDiagonalCaptureMoves(xFrom, yFrom, opositeColor, size, diagonalType, piecesTaken) {
         let enemyPosition = null;
         let positionsMoved = [];
         let [operationX, operationY] =
@@ -164,12 +168,13 @@ export class Game extends React.Component {
                 break;
             } else if (enemyPosition != null
                 && this.state.pieces[pos] === null
+                // eslint-disable-next-line
                 && piecesTaken.filter((p) => p === enemyPosition).length === 0
             ) {
                 positionsMoved.push(pos);
             } else if (enemyPosition === null
                 && this.state.pieces[this.getPosition(x, y)] != null) {
-                if (this.canTakePiece(pos, posMoreOne, opositeColor)) {
+                if (this.canCapture(pos, posMoreOne, opositeColor)) {
                     enemyPosition = this.getPosition(x, y);
                 } else {
                     break;
@@ -179,20 +184,20 @@ export class Game extends React.Component {
         return [positionsMoved, enemyPosition];
     }
 
-    getDoubleMovesTakePieces(pieceDraggable, moves, piecesTaken) {
+    getKingCaptureMoves(positionedPiece, moves, piecesTaken) {
         const position = moves.length > 0 ? moves.slice(-1)[0] :
-            (pieceDraggable.xFrom + pieceDraggable.yFrom * this.NUM_ROWS_BY_LINE);
+            positionedPiece.position;
         const [xFrom, yFrom] = this.getXAndY(position);
         let upperMoves = [];
         for (let diagonalType of this.DIAGONAL_TYPES_LIST) {
             const size = this.getDiagonalSize(xFrom, yFrom, diagonalType);
             if (size > 1) {
                 const [newMovesPositions, enemyPosition] =
-                    this.getDoubleDiagonalTakePiecesMoves(xFrom, yFrom,
-                        this.getOpositeColor(pieceDraggable.color),
+                    this.getKingDiagonalCaptureMoves(xFrom, yFrom,
+                        this.getOpositeColor(positionedPiece.color),
                         size, diagonalType, piecesTaken);
                 for (let pos of newMovesPositions) {
-                    upperMoves.push(this.getDoubleMovesTakePieces(pieceDraggable,
+                    upperMoves.push(this.getKingCaptureMoves(positionedPiece,
                         moves.concat(pos), piecesTaken.concat(enemyPosition)));
                 }
             }
@@ -210,20 +215,20 @@ export class Game extends React.Component {
         return arr;
     }
 
-    canTakePiece(position1, position2, opositeColor) {
+    canCapture(position1, position2, opositeColor) {
         return this.state.pieces[position1] != null
             && this.state.pieces[position2] === null
             && this.state.pieces[position1].color === opositeColor;
     }
 
-    canSimplePieceTakePieces(pieceDraggable) {
-        const [x, y] = [pieceDraggable.xFrom, pieceDraggable.yFrom];
+    canManCaptures(positionedPiece) {
+        const [x, y] = this.getXAndY(positionedPiece.position);
         for (let diagonalType of this.DIAGONAL_TYPES_LIST) {
             const [xOperation, yOperation] = this.getDiagonalOperations(diagonalType);
             if (this.getDiagonalSize(x, y, diagonalType) > 1
-                && this.canTakePiece(this.getPosition(x + xOperation, y + yOperation),
+                && this.canCapture(this.getPosition(x + xOperation, y + yOperation),
                     this.getPosition(x + 2 * xOperation, y + 2 * yOperation),
-                    this.getOpositeColor(pieceDraggable.color))
+                    this.getOpositeColor(positionedPiece.color))
             ) {
                 return true;
             }
@@ -231,28 +236,28 @@ export class Game extends React.Component {
         return false;
     }
 
-    getSimplePieceYOperation(pieceDraggable) {
-        const y = pieceDraggable.yFrom;
-        if (pieceDraggable.color === ColorTypes.WHITE && y + 1 <= 7) {
+    getManYOperation(positionedPiece) {
+        const y = this.getY(positionedPiece.position);
+        if (positionedPiece.color === ColorTypes.WHITE && y + 1 <= 7) {
             return 1;
-        } else if (pieceDraggable.color === ColorTypes.BLACK && (y - 1) >= 0) {
+        } else if (positionedPiece.color === ColorTypes.BLACK && (y - 1) >= 0) {
             return -1;
         }
         return null;
     }
 
-    getMovesSimplePiece(pieceDraggable) {
+    getManMoves(positionedPiece) {
         let ppmList = [];
-        const [x, y] = [pieceDraggable.xFrom, pieceDraggable.yFrom];
-        if (this.canSimplePieceTakePieces(pieceDraggable)) {
-            let piecePossibleMoves = this.getMovesTakePieces(pieceDraggable, [], []);
+        const [x, y] = this.getXAndY(positionedPiece.position);
+        if (this.canManCaptures(positionedPiece)) {
+            let piecePossibleMoves = this.getManCaptureMoves(positionedPiece, [], []);
             const maxSize = piecePossibleMoves.reduce(
                 (prev, curr) =>
                     (prev.moves.length > curr.moves.length) ? prev : curr
             ).moves.length;
             return piecePossibleMoves.filter((pos) => pos.moves.length === maxSize);
         } else {
-            let yOperation = this.getSimplePieceYOperation(pieceDraggable);
+            let yOperation = this.getManYOperation(positionedPiece);
             for (let xPart of [x - 1, x + 1]) {
                 const lastPosition = this.getPosition(xPart, y + yOperation);
                 if (xPart >= 0 && xPart <= 7 && yOperation != null &&
@@ -264,12 +269,12 @@ export class Game extends React.Component {
         return ppmList;
     }
 
-    getDoubleMovesPiece(pieceDraggable) {
-        const position = pieceDraggable.xFrom + pieceDraggable.yFrom * this.NUM_ROWS_BY_LINE;
-        let piecePossibleMoves = this.getDoubleMovesTakePieces(pieceDraggable, [], []);
-        let canTakePieces = piecePossibleMoves.length > 0;
+    getKingMoves(positionedPiece) {
+        const position = positionedPiece.position;
+        let piecePossibleMoves = this.getKingCaptureMoves(positionedPiece, [], []);
+        let canCaptures = piecePossibleMoves.length > 0;
 
-        if (canTakePieces) {
+        if (canCaptures) {
             let biggerSize = 0;
             let positions = [];
 
@@ -285,25 +290,25 @@ export class Game extends React.Component {
             }
             return positions;
         } else {
-            let nearPositions = this.getDoubleNearMoves(position);
+            let nearPositions = this.getKingNonCaptureMoves(position);
             return nearPositions.filter((ppms) =>
                 this.state.pieces[ppms.moves.slice(-1)[0]] === null);
         }
     }
 
-    handleCanMovePiece(pieceDraggable, xTo, yTo) {
-        const position = this.getPosition(pieceDraggable.xFrom, pieceDraggable.yFrom);
+    handleCanMovePiece(positionedPiece, targetPosition) {
+        const position = positionedPiece.position;
         if (this.possibleMoves[position] != null) {
             for (let p of this.possibleMoves[position]) {
                 const lastMove = p.moves.slice(-1)[0];
-                if (lastMove === this.getPosition(xTo, yTo)) {
+                if (lastMove === targetPosition) {
                     return PossibleMoveType.LAST_MOVE;
                 }
             }
             for (let p of this.possibleMoves[position]) {
                 const moves = p.moves.slice(0, p.moves.length - 1);
                 for (let m of moves) {
-                    if (m === this.getPosition(xTo, yTo)) {
+                    if (m === targetPosition) {
                         return PossibleMoveType.PARTIAL_MOVE;
                     }
                 }
@@ -312,17 +317,16 @@ export class Game extends React.Component {
         return PossibleMoveType.NO_MOVE;
     }
 
-    checkMovePossibility(color) {
+    existsPossibleMove(color) {
         for (let position = 0; position < this.NUM_ROWS; position++) {
             const piece = this.state.pieces[position];
-            const [xFrom, yFrom] = this.getXAndY(position);
             if (piece != null && piece.color === color) {
-                let pieceDraggable = new PieceDraggable(piece.color, piece.type, xFrom, yFrom);
+                let positionedPiece = new PositionedPiece(piece.color, piece.type, position);
                 if (this.possibleMoves[position] == null) {
-                    if (pieceDraggable.type === PieceTypes.SIMPLE)
-                        this.possibleMoves[position] = this.getMovesSimplePiece(pieceDraggable);
+                    if (positionedPiece.type === PieceTypes.MAN)
+                        this.possibleMoves[position] = this.getManMoves(positionedPiece);
                     else
-                        this.possibleMoves[position] = this.getDoubleMovesPiece(pieceDraggable);
+                        this.possibleMoves[position] = this.getKingMoves(positionedPiece);
                 }
                 if (this.possibleMoves[position].length > 0) {
                     return true;
@@ -332,51 +336,46 @@ export class Game extends React.Component {
         return false;
     }
 
-    handleMovePiece(xFrom, yFrom, x, y) {
-        const pieces = this.state.pieces.slice();
-        const positionTarget = x + (y * this.NUM_ROWS_BY_LINE);
-        const positionOrigin = xFrom + (yFrom * this.NUM_ROWS_BY_LINE);
+    handleMovePiece(originalPosition, targetPosition) {
+        let pieces = this.state.pieces.slice();
         let pieceMoveChoose = null;
-        for (let pm of this.possibleMoves[positionOrigin]) {
-            if (pm.moves.slice(-1)[0] === positionTarget) {
+        for (let pm of this.possibleMoves[originalPosition]) {
+            if (pm.moves.slice(-1)[0] === targetPosition) {
                 pieceMoveChoose = pm;
             }
         }
         for (let p of pieceMoveChoose.piecesTaken) {
             pieces[p] = null;
         }
-        pieces[positionTarget] = pieces[positionOrigin];
-        pieces[positionOrigin] = null;
-        this.setState({ pieces: [], ...this.state }, () => {
-            this.setState({
-                pieces: pieces,
-                count: this.state.count + 1
-            })
-        });
-        this.handlePrepareNextPlay();
-        this.putTheCrownIfNecessary(x, y);
-
-    }
-
-    putTheCrownIfNecessary(x, y) {
-        const position = this.getPosition(x, + y);
-        if ((this.state.pieces[position].color === ColorTypes.BLACK && y === 0) ||
-            (this.state.pieces[position].color === ColorTypes.WHITE && y === 7)) {
-            const pieces = this.state.pieces.slice();
-            pieces[position].type = PieceTypes.DOUBLE;
-            this.setState({
-                pieces: pieces,
-                count: this.state.count + 1
-            });
+        pieces[targetPosition] = pieces[originalPosition];
+        pieces[originalPosition] = null;
+        if (this.canPutTheCrown(pieces[targetPosition], targetPosition)) {
+            pieces[targetPosition].type = PieceTypes.KING;            
         }
+        const [blacksCount, whitesCount] = this.getPieceQuantities(pieces);
+        const whiteIsNext = !this.state.whiteIsNext;
+        this.setState({
+            ...this.state, pieces: pieces,
+            count: this.state.count + 1,
+            blacksCount: blacksCount,
+            whitesCount: whitesCount,
+            whiteIsNext: whiteIsNext
+        })        
     }
 
-    handleCanDragPiece(pieceDraggable) {
-        if (pieceDraggable != null && (
-            (this.state.whiteIsNext && ColorTypes.WHITE === pieceDraggable.color) ||
-            (!this.state.whiteIsNext && ColorTypes.BLACK === pieceDraggable.color)
+    canPutTheCrown(piece, position) {
+        const y = this.getY(position);
+        return (((piece.color === ColorTypes.BLACK && y === 0) ||
+            (piece.color === ColorTypes.WHITE && y === 7)) &&
+            piece.type !== PieceTypes.KING);                
+    }
+
+    handleCanDragPiece(positionedPiece) {
+        if (positionedPiece != null && (
+            (this.state.whiteIsNext && ColorTypes.WHITE === positionedPiece.color) ||
+            (!this.state.whiteIsNext && ColorTypes.BLACK === positionedPiece.color)
         )) {
-            const position = this.getPosition(pieceDraggable.xFrom, pieceDraggable.yFrom);
+            const position = positionedPiece.position;
             return this.possibleMoves[position] != null &&
                 this.possibleMoves[position].length > 0;
         }
@@ -384,8 +383,8 @@ export class Game extends React.Component {
     }
 
     isThePieceTurn(piece) {
-        return ((this.state.whiteIsNext && piece.color == ColorTypes.WHITE) ||
-            (!this.state.whiteIsNext && piece.color == ColorTypes.BLACK));
+        return ((this.state.whiteIsNext && piece.color === ColorTypes.WHITE) ||
+            (!this.state.whiteIsNext && piece.color === ColorTypes.BLACK));
     }
 
     filterMovesWithMaxTakenPieces(maxTakenPiecesPossible, possibleMoves) {
@@ -393,7 +392,7 @@ export class Game extends React.Component {
             if (this.state.pieces[position] != null
                 && possibleMoves[position] != null) {
                 possibleMoves[position] = possibleMoves[position].filter((ppm) =>
-                    (ppm.piecesTaken.length == maxTakenPiecesPossible)) || [];
+                    (ppm.piecesTaken.length === maxTakenPiecesPossible)) || [];
             }
         }
         return possibleMoves;
@@ -404,13 +403,12 @@ export class Game extends React.Component {
         let maxTakenPiecesPossible = 0;
         for (let position = 0; position < this.NUM_ROWS; position++) {
             const piece = this.state.pieces[position];
-            const [xFrom, yFrom] = this.getXAndY(position);
             if (piece != null && this.isThePieceTurn(piece)) {
-                let pieceDraggable = new PieceDraggable(piece.color, piece.type, xFrom, yFrom);
+                let positionedPiece = new PositionedPiece(piece.color, piece.type, position);
                 possibleMoves[position] =
-                    (pieceDraggable.type === PieceTypes.SIMPLE) ?
-                        this.getMovesSimplePiece(pieceDraggable) :
-                        this.getDoubleMovesPiece(pieceDraggable);
+                    (positionedPiece.type === PieceTypes.MAN) ?
+                        this.getManMoves(positionedPiece) :
+                        this.getKingMoves(positionedPiece);
             } else {
                 possibleMoves[position] = null;
             }
@@ -430,22 +428,17 @@ export class Game extends React.Component {
         this.possibleMoves = possibleMoves;
     }
 
-    handlePrepareNextPlay() {
+    getPieceQuantities(pieces) {
         let blacksCount = 0;
         let whitesCount = 0;
-        for (let piece of this.state.pieces.filter((p) => p != null)) {
+        for (let piece of pieces.filter((p) => p != null)) {
             if (piece.color === ColorTypes.BLACK) {
                 blacksCount++;
             } else if (piece.color === ColorTypes.WHITE) {
                 whitesCount++;
             }
         }
-        this.setState({
-            ...this.state,
-            whiteIsNext: !this.state.whiteIsNext,
-            whitesCount: whitesCount,
-            blacksCount: blacksCount
-        });
+        return [blacksCount, whitesCount];
     }
 
     getTheWinner() {
@@ -466,9 +459,9 @@ export class Game extends React.Component {
         if (whitesCount === 0) {
             return PlayerNames.BLACK;
         }
-        if (this.state.whiteIsNext && !this.checkMovePossibility(ColorTypes.WHITE)) {
+        if (this.state.whiteIsNext && !this.existsPossibleMove(ColorTypes.WHITE)) {
             return PlayerNames.BLACK;
-        } else if (!this.state.whiteIsNext && !this.checkMovePossibility(ColorTypes.BLACK)) {
+        } else if (!this.state.whiteIsNext && !this.existsPossibleMove(ColorTypes.BLACK)) {
             return PlayerNames.WHITE;
         }
     }
@@ -489,12 +482,11 @@ export class Game extends React.Component {
                     <Board
                         numRowsByLine={this.NUM_ROWS_BY_LINE}
                         numRows={this.NUM_ROWS}
+                        handleCanMovePiece={this.handleCanMovePiece}
+                        handleCanDragPiece={this.handleCanDragPiece}
+                        handleMovePiece={this.handleMovePiece}
                         whiteIsNext={this.state.whiteIsNext}
                         pieces={this.state.pieces}
-                        handleMovePiece={this.handleMovePiece}
-                        handleCanMovePiece={this.handleCanMovePiece}
-                        handlePrepareNextPlay={this.handlePrepareNextPlay}
-                        handleCanDragPiece={this.handleCanDragPiece}
                         count={this.state.count}
                     />
                 </div>

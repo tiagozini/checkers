@@ -3,8 +3,8 @@ import BoardSquare from './BoardSquare';
 import Piece from './Piece';
 import { PositionedPiece } from '../models/PositionedPiece';
 
+import { TouchBackend } from 'react-dnd-touch-backend'
 import { DndProvider } from 'react-dnd'
-import { HTML5Backend } from 'react-dnd-html5-backend';
 
 export class Board extends React.Component {
     constructor(props) {
@@ -50,8 +50,11 @@ export class Board extends React.Component {
     }
 
     render() {
+        const backendOptions = {
+            enableMouseEvents: true
+        }   
         return (
-            <DndProvider backend={HTML5Backend}>
+            <DndProvider backend={TouchBackend} options={backendOptions}>
                 <div className="board-row">
                     {Array.from(Array(this.props.numRowsByLine).keys()).map((i)=> 
                         this.renderSquareLine(i))

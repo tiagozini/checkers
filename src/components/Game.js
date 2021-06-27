@@ -26,7 +26,6 @@ export class Game extends React.Component {
             this.possibleMoves.push(null);
         }
 
-        this.getPieceQuantities = this.getPieceQuantities.bind(this);
         this.handleMovePiece = this.handleMovePiece.bind(this);
         this.handleCanMovePiece = this.handleCanMovePiece.bind(this);
         this.getManMoves = this.getManMoves.bind(this);
@@ -336,7 +335,7 @@ export class Game extends React.Component {
         return false;
     }
 
-    handleMovePiece(originalPosition, targetPosition) {
+    handleMovePiece = (originalPosition, targetPosition) => {
         let pieces = this.state.pieces.slice();
         let pieceMoveChoose = null;
         for (let pm of this.possibleMoves[originalPosition]) {
@@ -428,7 +427,7 @@ export class Game extends React.Component {
         this.possibleMoves = possibleMoves;
     }
 
-    getPieceQuantities(pieces) {
+    getPieceQuantities = (pieces) => {
         let blacksCount = 0;
         let whitesCount = 0;
         for (let piece of pieces.filter((p) => p != null)) {

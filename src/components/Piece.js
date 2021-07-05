@@ -47,6 +47,6 @@ export default function Piece(props) {
   return <img
     ref={drag} alt=""
     style={getStyle(drag)}
-    src={url} width="50px"
+    src={url} width="50px" height="50px"
   />
 }

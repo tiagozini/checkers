@@ -34,3 +34,8 @@ export const PossibleMoveType = {
   LAST_MOVE : 1,
   PARTIAL_MOVE : 2
 }
+
+export const GameDefintions = {
+  NUM_ROWS_BY_LINE : 8,
+  NUM_ROWS : 64
+}

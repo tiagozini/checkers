@@ -4,14 +4,15 @@ import { PiecePossibleMoves } from '../models/PiecePossibleMoves';
 import { PositionedPiece } from '../models/PositionedPiece';
 import { Board } from './Board';
 
-import { ColorTypes, PieceTypes, PossibleMoveType, PlayerNames, DiagonalTypes } from '../Constants';
+import { ColorTypes, PieceTypes, PossibleMoveType, PlayerNames, DiagonalTypes, GameDefintions } from '../Constants';
+import { TurnInfo } from '../models/TurnInfo';
 
 export class Game extends React.Component {
 
     constructor(props) {
         super(props);
-        this.NUM_ROWS_BY_LINE = 8;
-        this.NUM_ROWS = this.NUM_ROWS_BY_LINE * this.NUM_ROWS_BY_LINE;
+        this.NUM_ROWS_BY_LINE = GameDefintions.NUM_ROWS_BY_LINE;
+        this.NUM_ROWS = GameDefintions.NUM_ROWS;
         this.DIAGONAL_TYPES_LIST = [DiagonalTypes.LEFT_DOWN, DiagonalTypes.LEFT_UP,
         DiagonalTypes.RIGHT_DOWN, DiagonalTypes.RIGHT_UP];
         this.state = {
@@ -22,23 +23,23 @@ export class Game extends React.Component {
             count: 1
         };
         this.possibleMoves = [];
+        this.turnInfo = new TurnInfo(ColorTypes.WHITE)
         for (let i = 0; i < this.NUM_ROWS; i++) {
             this.possibleMoves.push(null);
         }
 
         this.handleMovePiece = this.handleMovePiece.bind(this);
         this.handleCanMovePiece = this.handleCanMovePiece.bind(this);
+        this.handleCanDragPiece = this.handleCanDragPiece.bind(this);
         this.getManMoves = this.getManMoves.bind(this);
         this.getManCaptureMoves = this.getManCaptureMoves.bind(this);
+        this.canManCaptures = this.canManCaptures.bind(this);
         this.getKingCaptureMoves = this.getKingCaptureMoves.bind(this);
-        this.handleCanDragPiece = this.handleCanDragPiece.bind(this);
+        this.getKingNonCaptureMoves = this.getKingNonCaptureMoves.bind(this);
         this.updatePossibleMoves = this.updatePossibleMoves.bind(this);
         this.mountInitialPieces = this.mountInitialPieces.bind(this);
         this.getPosition = this.getPosition.bind(this);
         this.getXAndY = this.getXAndY.bind(this);
-        this.getKingNonCaptureMoves = this.getKingNonCaptureMoves.bind(this);
-        this.isThePieceTurn = this.isThePieceTurn.bind(this);
-        this.canManCaptures = this.canManCaptures.bind(this);
         this.isThePieceTurn = this.isThePieceTurn.bind(this);
         this.filterMovesWithMaxTakenPieces = this.filterMovesWithMaxTakenPieces.bind(this);
     }
@@ -295,21 +296,13 @@ export class Game extends React.Component {
         }
     }
 
-    handleCanMovePiece(positionedPiece, targetPosition) {
-        const position = positionedPiece.position;
-        if (this.possibleMoves[position] != null) {
-            for (let p of this.possibleMoves[position]) {
-                const lastMove = p.moves.slice(-1)[0];
-                if (lastMove === targetPosition) {
+    handleCanMovePiece(positionedPiece, dropPosition) {
+        this.turnInfo.updateOriginalPosition(positionedPiece);
+        const originalPosition = this.turnInfo.originalPosition;
+        if (this.turnInfo.piecesPossibleMoves[originalPosition] != null) {
+            for (let p of this.turnInfo.piecesPossibleMoves[originalPosition]) {
+                if (p.moves[this.turnInfo.currentStep - 1] === dropPosition) {
                     return PossibleMoveType.LAST_MOVE;
-                }
-            }
-            for (let p of this.possibleMoves[position]) {
-                const moves = p.moves.slice(0, p.moves.length - 1);
-                for (let m of moves) {
-                    if (m === targetPosition) {
-                        return PossibleMoveType.PARTIAL_MOVE;
-                    }
                 }
             }
         }
@@ -321,13 +314,13 @@ export class Game extends React.Component {
             const piece = this.state.pieces[position];
             if (piece != null && piece.color === color) {
                 let positionedPiece = new PositionedPiece(piece.color, piece.type, position);
-                if (this.possibleMoves[position] == null) {
+                if (this.turnInfo.piecesPossibleMoves[position] == null) {
                     if (positionedPiece.type === PieceTypes.MAN)
-                        this.possibleMoves[position] = this.getManMoves(positionedPiece);
+                        this.turnInfo.piecesPossibleMoves[position] = this.getManMoves(positionedPiece);
                     else
-                        this.possibleMoves[position] = this.getKingMoves(positionedPiece);
+                        this.turnInfo.piecesPossibleMoves[position] = this.getKingMoves(positionedPiece);
                 }
-                if (this.possibleMoves[position].length > 0) {
+                if (this.turnInfo.piecesPossibleMoves[position].length > 0) {
                     return true;
                 }
             }
@@ -335,38 +328,39 @@ export class Game extends React.Component {
         return false;
     }
 
-    handleMovePiece = (originalPosition, targetPosition) => {
+    handleMovePiece = (dragPosition, dropPosition) => {
+        this.turnInfo.storeMove(dropPosition);
         let pieces = this.state.pieces.slice();
-        let pieceMoveChoose = null;
-        for (let pm of this.possibleMoves[originalPosition]) {
-            if (pm.moves.slice(-1)[0] === targetPosition) {
-                pieceMoveChoose = pm;
-            }
-        }
-        for (let p of pieceMoveChoose.piecesTaken) {
-            pieces[p] = null;
-        }
-        pieces[targetPosition] = pieces[originalPosition];
-        pieces[originalPosition] = null;
-        if (this.canPutTheCrown(pieces[targetPosition], targetPosition)) {
-            pieces[targetPosition].type = PieceTypes.KING;            
+        pieces[dropPosition] = pieces[dragPosition];
+        pieces[dragPosition] = null;
+        let whiteIsNext = this.state.whiteIsNext;
+        if (this.turnInfo.finished) {
+            for (let p of this.turnInfo.capturedPiecePositions) {
+                pieces[p] = null;
+            }            
+            whiteIsNext = !this.state.whiteIsNext;
+            if (this.canPutTheCrown(pieces[dropPosition], dropPosition)) {
+                pieces[dropPosition].type = PieceTypes.KING;
+            }            
+            const currentColor = whiteIsNext ? ColorTypes.WHITE : ColorTypes.BLACK; 
+            this.turnInfo = new TurnInfo(currentColor);            
         }
         const [blacksCount, whitesCount] = this.getPieceQuantities(pieces);
-        const whiteIsNext = !this.state.whiteIsNext;
         this.setState({
             ...this.state, pieces: pieces,
             count: this.state.count + 1,
             blacksCount: blacksCount,
             whitesCount: whitesCount,
             whiteIsNext: whiteIsNext
-        })        
+        });
+        this.updatePossibleMoves();
     }
 
     canPutTheCrown(piece, position) {
         const y = this.getY(position);
         return (((piece.color === ColorTypes.BLACK && y === 0) ||
             (piece.color === ColorTypes.WHITE && y === 7)) &&
-            piece.type !== PieceTypes.KING);                
+            piece.type !== PieceTypes.KING);
     }
 
     handleCanDragPiece(positionedPiece) {
@@ -398,33 +392,38 @@ export class Game extends React.Component {
     }
 
     updatePossibleMoves() {
-        let possibleMoves = this.possibleMoves.slice();
-        let maxTakenPiecesPossible = 0;
-        for (let position = 0; position < this.NUM_ROWS; position++) {
-            const piece = this.state.pieces[position];
-            if (piece != null && this.isThePieceTurn(piece)) {
-                let positionedPiece = new PositionedPiece(piece.color, piece.type, position);
-                possibleMoves[position] =
-                    (positionedPiece.type === PieceTypes.MAN) ?
-                        this.getManMoves(positionedPiece) :
-                        this.getKingMoves(positionedPiece);
-            } else {
-                possibleMoves[position] = null;
-            }
-        }
-        for (let position = 0; position < this.NUM_ROWS; position++) {
-            if (possibleMoves[position] != null) {
-                for (let ppm of possibleMoves[position]) {
-                    maxTakenPiecesPossible = Math.max(maxTakenPiecesPossible,
-                        ppm.piecesTaken.length);
+        if (this.turnInfo.currentStep > 1) {
+            this.possibleMoves = this.turnInfo.piecesPossibleMoves;
+        } else {
+            let possibleMoves = this.possibleMoves.slice();
+            let maxTakenPiecesPossible = 0;
+            for (let position = 0; position < this.NUM_ROWS; position++) {
+                const piece = this.state.pieces[position];
+                if (piece != null && this.isThePieceTurn(piece)) {
+                    let positionedPiece = new PositionedPiece(piece.color, piece.type, position);
+                    possibleMoves[position] =
+                        (positionedPiece.type === PieceTypes.MAN) ?
+                            this.getManMoves(positionedPiece) :
+                            this.getKingMoves(positionedPiece);
+                } else {
+                    possibleMoves[position] = null;
                 }
             }
+            for (let position = 0; position < this.NUM_ROWS; position++) {
+                if (possibleMoves[position] != null) {
+                    for (let ppm of possibleMoves[position]) {
+                        maxTakenPiecesPossible = Math.max(maxTakenPiecesPossible,
+                            ppm.piecesTaken.length);
+                    }
+                }
+            }
+            if (maxTakenPiecesPossible > 0) {
+                possibleMoves = this.filterMovesWithMaxTakenPieces(maxTakenPiecesPossible,
+                    possibleMoves);
+            }
+            this.possibleMoves = possibleMoves;
+            this.turnInfo.updatePossibleMoves(possibleMoves.slice());
         }
-        if (maxTakenPiecesPossible > 0) {
-            possibleMoves = this.filterMovesWithMaxTakenPieces(maxTakenPiecesPossible,
-                possibleMoves);
-        }
-        this.possibleMoves = possibleMoves;
     }
 
     getPieceQuantities = (pieces) => {
@@ -489,7 +488,7 @@ export class Game extends React.Component {
                         count={this.state.count}
                     />
                 </div>
-                <div className="game-info">
+                <div className="game-info clearfix">
                     <div>{status}</div>
                     <p>Whites: {this.state.whitesCount}</p>
                     <p>Blacks: {this.state.blacksCount}</p>

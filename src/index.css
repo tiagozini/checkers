@@ -129,7 +129,12 @@ body {
 }
 
 button {
-  padding:5px;
+  padding:0.2em 0.4em;
+  font-size:0.8em;
+  border-radius: 40%;
+  background-color: blue;
+  color: white;
+  font-weight: bold;
 }
 
 @media (min-width: 1100px) { 

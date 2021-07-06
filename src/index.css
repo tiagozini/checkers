@@ -3,25 +3,79 @@
   padding: 0;
   outline:0;
 }
-    .game {  
+
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 18px;
+}
+
+.clearfix::after {
+  content: "";
+  clear: both;
+  display: table;
+}
+
+#root {
+  text-align: center;
+}
+
+.game {  
   width: 400;
   height: 400px; 
-  position:relative
+  margin: 0 auto;
+  position:relative;
 }
+
+.game-presentation {
+  width: 100%;
+  display: block;
+  height: 10%; 
+}
+
+.game-presentation p {
+  padding-top: 0.25em;
+  padding-bottom: 0.25em;
+  font-size: 1em;  
+}
+
+.game-footer {
+  height: 10%;
+  width: 100%;
+  display: table;  
+  clear: both;
+}
+
+.game-footer span {
+  width: 33.33%;
+  bottom:0;
+  height:100%;
+  vertical-align: middle;
+  display: table-cell;
+  text-align: center;
+  padding: 0.25em;
+  font-size: 0.66em;
+}
+
 .game-info {
   float:left;
   margin:0;
   padding:0;
   border:0;
+  height: 80%;
   width:20%;
-  outline: 5px solid transparent;
   font-family: arial,helvetica, sans-serif;
 }
+
 .game-info p {
   padding: 5px;
-  font-size:17px;
-  text-align:center;
+  font-size : 0.75em;
+  text-align : center;
 }
+
+.game-info, .game-presentation, .game-footer {
+  outline: 1px solid blue;
+}
+
 .game-board {
   position:relative;
   width:80%;
@@ -74,90 +128,71 @@
   position: absolute;
 }
 
-@media (min-width: 1100px) { 
-  .game {  width: 1100px; height: 1100px;}
-  .game-info p {
-  padding: 5px;
-  font-size:35px;
-  }		  
+button {
+  padding:5px;
 }
 
+@media (min-width: 1100px) { 
+  .game {  width: 600px; height: 600px;}
+  .game-info p { padding: 5px; }		  		  
+  body {  font-size:26px; }}
+
 @media (min-width: 1000px) and (max-width: 1099.99px) { 
-  .game {  width: 1000px; height: 1000px;}
-  .game-info p {
-  padding: 5px;
-  font-size:32px;
-  }		  		  
+  .game {  width: 600px; height: 600px;}
+  .game-info p { padding: 5px; }		  		  
+  body {  font-size:26px; }
 }
 
 @media (min-width: 900px) and (max-width: 999.99px) { 
-  .game {  width: 900px; height: 900px;}
-  .game-info p {
-  padding: 5px;
-  font-size:30px;
-  }		  
+  .game {  width: 600px; height: 600px;}
+  .game-info p { padding: 5px; }		  		  
+  body {  font-size:26px; }
 }
 
 @media (min-width: 800px) and (max-width: 899.99px) { 
-  .game {  width: 800px; height: 800px;}
-  .game-info p {
-  padding: 5px;
-  font-size:28px;
-  }		  
+  .game {  width: 600px; height: 600px;}
+  .game-info p { padding: 5px; }		  		  
+  body {  font-size:26px; }
 }
 
 @media (min-width: 700px) and (max-width: 799.99px) { 
-  .game {  width: 700px; height: 700px;}
-  .game-info p {
-  padding: 4px;
-  font-size:26px;
-  }
+  .game {  width: 600px; height: 600px;}
+  .game-info p { padding: 4px; }		  		  
+  body {  font-size:26px; }
 }
 
 @media (min-width: 600px) and (max-width: 699.99px) { 
   .game {  width: 600px; height: 600px;}
-  .game-info p {
-  padding: 3px;
-  font-size:15px;
-  }
+  .game-info p { padding: 3px; }		  		  
+  body {  font-size:22px; }
 }
 
 @media (min-width: 500px) and (max-width: 599.99px) { 
   .game {  width: 500px; height: 500px;}
-  .game-info p {
-  padding: 3px;
-  font-size:15px;
-  }		  
+  .game-info p { padding: 3x; }		  		  
+  body {  font-size:18px; }
 }
 
 @media (min-width: 400px) and (max-width: 499.99px) { 
   .game {  width: 400px; height: 400px;}
-  .game-info p {
-  padding: 3px;
-  font-size:14px;
-  }		  
+  .game-info p { padding: 3px; }		  		  
+  body {  font-size:14px; }
 }
 
 @media (min-width: 300px) and (max-width: 399.99px) { 
   .game {  width: 300px; height: 300px;}
-  .game-info p {
-  padding: 3px;
-  font-size:14px;
-  }	
+  .game-info p { padding: 3px; }		  		  
+  body {  font-size:14px; }
 }
 
 @media (min-width: 250px) and (max-width: 299.99px) { 
   .game {  width: 250px; height: 250px;}
-  .game-info p {
-  padding: 3px;
-  font-size:10px;
-  }	
+  .game-info p { padding: 3px; }		  		  
+  body {  font-size:10px; }
 }
 
 @media (min-width: 0px) and (max-width: 249.99px) { 
   .game {  width: 200px; height: 200px;}
-  .game-info p {
-  padding: 3px;
-  font-size:10px;
-  }	
+  .game-info p { padding: 3px; }		  		  
+  body {  font-size:10px; }
 }

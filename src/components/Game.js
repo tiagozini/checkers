@@ -15,13 +15,7 @@ export class Game extends React.Component {
         this.NUM_ROWS = GameDefintions.NUM_ROWS;
         this.DIAGONAL_TYPES_LIST = [DiagonalTypes.LEFT_DOWN, DiagonalTypes.LEFT_UP,
         DiagonalTypes.RIGHT_DOWN, DiagonalTypes.RIGHT_UP];
-        this.state = {
-            whiteIsNext: true,
-            pieces: this.mountInitialPieces(),
-            whitesCount: 12,
-            blacksCount: 12,
-            count: 1
-        };
+        this.state = this.mountInitialState();
         this.possibleMoves = [];
         this.turnInfo = new TurnInfo(ColorTypes.WHITE)
         for (let i = 0; i < this.NUM_ROWS; i++) {
@@ -37,27 +31,47 @@ export class Game extends React.Component {
         this.getKingCaptureMoves = this.getKingCaptureMoves.bind(this);
         this.getKingNonCaptureMoves = this.getKingNonCaptureMoves.bind(this);
         this.updatePossibleMoves = this.updatePossibleMoves.bind(this);
-        this.mountInitialPieces = this.mountInitialPieces.bind(this);
         this.getPosition = this.getPosition.bind(this);
         this.getXAndY = this.getXAndY.bind(this);
         this.isThePieceTurn = this.isThePieceTurn.bind(this);
         this.filterMovesWithMaxTakenPieces = this.filterMovesWithMaxTakenPieces.bind(this);
+        this.restartGame = this.restartGame.bind(this);
+        this.resetPossibleMoves = this.resetPossibleMoves.bind(this);    
     }
 
-    mountInitialPieces() {
-        const pieces = [];
+    restartGame() {
+        this.setState(this.mountInitialState());
+        this.turnInfo = new TurnInfo(ColorTypes.WHITE)
+        this.resetPossibleMoves();
+    }
+
+    resetPossibleMoves() {
+        this.possibleMoves = [];
         for (let i = 0; i < this.NUM_ROWS; i++) {
-            const lineNumberRest = Math.trunc((i) / this.NUM_ROWS_BY_LINE);
+            this.possibleMoves.push(null);
+        }        
+    }
+
+    mountInitialState() {
+        const pieces = [];
+        for (let i = 0; i < GameDefintions.NUM_ROWS; i++) {
+            const lineNumberRest = Math.trunc((i) / GameDefintions.NUM_ROWS_BY_LINE);
             const even = ((lineNumberRest + i) % 2) === 0;
             if (i >= 0 && i < 24 && !even) {
                 pieces.push(new Piece(ColorTypes.WHITE, PieceTypes.MAN));
-            } else if (i >= 40 && i < this.NUM_ROWS && !even) {
+            } else if (i >= 40 && i < GameDefintions.NUM_ROWS && !even) {
                 pieces.push(new Piece(ColorTypes.BLACK, PieceTypes.MAN));
             } else {
                 pieces.push(null);
             }
         }
-        return pieces;
+        return {
+            whiteIsNext: true,
+            pieces: pieces,
+            whitesCount: 12,
+            blacksCount: 12,
+            count: 1
+        }
     }
 
     getPosition(x, y) {
@@ -476,6 +490,9 @@ export class Game extends React.Component {
         }
         return (
             <div className="game">
+                <div className="game-presentation">
+                    <p>Welcome to Checkers game!</p>
+                </div>
                 <div className="game-board">
                     <Board
                         numRowsByLine={this.NUM_ROWS_BY_LINE}
@@ -492,6 +509,12 @@ export class Game extends React.Component {
                     <p>{status}</p>
                     <p>Whites: {this.state.whitesCount}</p>
                     <p>Blacks: {this.state.blacksCount}</p>
+                    <p><button onClick={this.restartGame}>Restart</button></p>                    
+                </div>
+                <div className="game-footer clearfix">
+                    <span>Criado por<br /><b>Tiago Peterlevitz Zini</b></span>
+                    <span>&copy; 2021</span>
+                    <span><a href="https://github.com/tiagozini" target="blank">tiagozini@github.com</a></span>
                 </div>
             </div>
         );

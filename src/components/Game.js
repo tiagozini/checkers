@@ -484,9 +484,9 @@ export class Game extends React.Component {
         let status;
 
         if (winner) {
-            status = 'Winner: ' + winner;
+            status = <span>Winner: <b>{winner}</b></span>;
         } else {
-            status = 'Next player: ' + (this.state.whiteIsNext ? 'White' : 'Black');
+            status = <span>Next player: <b>{this.state.whiteIsNext ? 'White' : 'Black'}</b></span>;
         }
         return (
             <div className="game">
@@ -513,7 +513,7 @@ export class Game extends React.Component {
                 </div>
                 <div className="game-footer clearfix">
                     <span>Criado por<br /><b>Tiago Peterlevitz Zini</b></span>
-                    <span>&copy; 2021</span>
+                    <span><b>&copy; 2021</b></span>
                     <span><a href="https://github.com/tiagozini" target="blank">tiagozini@github.com</a></span>
                 </div>
             </div>

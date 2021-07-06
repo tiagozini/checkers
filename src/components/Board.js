@@ -21,8 +21,8 @@ export class Board extends React.Component {
     renderSquare(position) {
       const piece = this.props.pieces[position];
       return (
-        <div key={""+position+"-"+this.props.count+"-" +this.props.whiteIsNext} 
-            style={{ width: '12.5%', height: '12.5%', display:"table-cell" }}>
+        <div key={""+position+"-"+this.props.count+"-" +this.props.whiteIsNext}             
+            className="game-board-square" >
             <BoardSquare 
                 position={position} 
                 handleMovePiece={this.movePiece}
@@ -41,25 +41,17 @@ export class Board extends React.Component {
       );
     }
 
-    renderSquareLine(lineNumber) {
-        return <div key={"squareline-"+this.props.count+"-"+lineNumber}> 
-            {Array.from(Array(this.props.numRowsByLine).keys()).map((i) => 
-                this.renderSquare((lineNumber) * this.props.numRowsByLine + i ))
-            }
-        </div>;
-    }
-
     render() {
         const backendOptions = {
             enableMouseEvents: true
         }   
         return (
             <DndProvider backend={TouchBackend} options={backendOptions}>
-                <div className="board-row">
-                    {Array.from(Array(this.props.numRowsByLine).keys()).map((i)=> 
-                        this.renderSquareLine(i))
-                    }
-                </div>  
+                    {Array.from(Array(this.props.numRowsByLine).keys()).map((lineNumber)=> 
+                        Array.from(Array(this.props.numRowsByLine).keys()).map((rowNumber) => 
+                            this.renderSquare((lineNumber) * this.props.numRowsByLine + rowNumber)
+                        )
+                    )}
             </DndProvider>          
         );
     }

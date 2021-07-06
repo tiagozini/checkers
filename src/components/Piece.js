@@ -29,9 +29,7 @@ export default function Piece(props) {
   const getStyle = (d) => {
     let style = {
       opacity: isDragging ? 0.5 : 1,
-      fontSize: 25,
-      fontWeight: 'bold',
-      cursor: 'move',
+      cursor: 'move'
     };
     if (draggable) {
       style.backgroundColor="pink";
@@ -47,6 +45,5 @@ export default function Piece(props) {
   return <img
     ref={drag} alt=""
     style={getStyle(drag)}
-    src={url} width="50px" height="50px"
-  />
+    src={url}   />
 }

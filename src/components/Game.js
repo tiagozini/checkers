@@ -489,7 +489,7 @@ export class Game extends React.Component {
                     />
                 </div>
                 <div className="game-info clearfix">
-                    <div>{status}</div>
+                    <p>{status}</p>
                     <p>Whites: {this.state.whitesCount}</p>
                     <p>Blacks: {this.state.blacksCount}</p>
                 </div>

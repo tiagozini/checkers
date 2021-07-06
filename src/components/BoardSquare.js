@@ -7,11 +7,8 @@ import { ItemTypes, PossibleMoveType } from '../Constants';
 export default function BoardSquare(props) {
 
   function getStyle() {
-    return {
-      position: 'relative',
-      width: '100%',
-      height: '100%',
-      display:'table-cell'};
+    return {   
+    };
   }
 
   function movePiece(originalPosition, targetPosition) {
@@ -45,7 +42,7 @@ export default function BoardSquare(props) {
     }),
   }), [props.position])
 
-  return (<div ref={drop}
+  return (<div ref={drop} className="board-square"
     style={getStyle()}><Square position={props.position} 
         piece={props.piece}>{props.children}</Square>
       {isOver && canDrop === false && <Overlay color="red" />}

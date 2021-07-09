@@ -13,7 +13,7 @@ export class Board extends React.Component {
         for(let i = 0; i < props.numRows; i++) {
             this.possibleMoves.push(null);
         }
-        this.movePiece = props.handleMovePiece.bind(this);
+        this.handleMovePiece = props.handleMovePiece.bind(this);
         this.handleCanMovePiece = props.handleCanMovePiece.bind(this);
         this.handleCanDragPiece = props.handleCanDragPiece.bind(this);
     }    
@@ -25,7 +25,7 @@ export class Board extends React.Component {
             className="game-board-square" >
             <BoardSquare 
                 position={position} 
-                handleMovePiece={this.movePiece}
+                handleMovePiece={this.handleMovePiece}
                 handleCanMovePiece={this.handleCanMovePiece}
                 whiteIsNext={this.props.whiteIsNext}
                 count={this.props.count}

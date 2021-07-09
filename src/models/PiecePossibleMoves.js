@@ -1,9 +1,9 @@
 export class PiecePossibleMoves {
     moves = [];
-    piecesTaken  = []; 
+    piecesCaptured  = []; 
 
-    constructor(moves, piecesTaken) {
+    constructor(moves, piecesCaptured) {
         this.moves = moves;
-        this.piecesTaken = piecesTaken;
+        this.piecesCaptured = piecesCaptured;
     }
 }

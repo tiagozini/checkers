@@ -65,7 +65,7 @@ export class TurnInfo {
                         }
                     }   
                     if (found) {
-                        return ppm.piecesTaken[this.currentStep - 1];
+                        return ppm.piecesCaptured[this.currentStep - 1];
                     }
                 }                     
             }

@@ -4,7 +4,10 @@ import { PiecePossibleMoves } from '../models/PiecePossibleMoves';
 import { PositionedPiece } from '../models/PositionedPiece';
 import { Board } from './Board';
 
-import { ColorTypes, PieceTypes, PossibleMoveType, PlayerNames, DiagonalTypes, GameDefintions } from '../Constants';
+import {
+    ColorTypes, PieceTypes, PossibleMoveType, PlayerNames, DiagonalTypes,
+    GameDefintions, GameMode
+} from '../Constants';
 import { TurnInfo } from '../models/TurnInfo';
 
 export class Game extends React.Component {
@@ -13,7 +16,7 @@ export class Game extends React.Component {
         super(props);
         this.DIAGONAL_TYPES_LIST = [DiagonalTypes.LEFT_DOWN, DiagonalTypes.LEFT_UP,
         DiagonalTypes.RIGHT_DOWN, DiagonalTypes.RIGHT_UP];
-        this.state = this.mountInitialState();
+        this.state = this.mountInitialState(GameMode.AGAINST_COMPUTER);
         this.possibleMoves = [];
         this.turnInfo = new TurnInfo(ColorTypes.WHITE)
         for (let i = 0; i < GameDefintions.NUM_ROWS; i++) {
@@ -34,23 +37,32 @@ export class Game extends React.Component {
         this.isThePieceTurn = this.isThePieceTurn.bind(this);
         this.filterMovesWithMaxCapturedPieces = this.filterMovesWithMaxCapturedPieces.bind(this);
         this.restartGame = this.restartGame.bind(this);
-        this.resetPossibleMoves = this.resetPossibleMoves.bind(this);    
+        this.resetPossibleMoves = this.resetPossibleMoves.bind(this);
+        this.handleGameModeChange = this.handleGameModeChange.bind(this);
+        this.doComputerPlay = this.doComputerPlay.bind(this);
     }
 
     restartGame() {
-        this.setState(this.mountInitialState());
+        let gameMode = document.getElementById("gameMode").value;
+        this.setState(this.mountInitialState(gameMode));
         this.turnInfo = new TurnInfo(ColorTypes.WHITE)
         this.resetPossibleMoves();
+    }
+
+    handleGameModeChange(e) {
+        let value = e.target.value;
+        this.setState({ ...this.state, gameMode: value });
+        this.restartGame();
     }
 
     resetPossibleMoves() {
         this.possibleMoves = [];
         for (let i = 0; i < GameDefintions.NUM_ROWS; i++) {
             this.possibleMoves.push(null);
-        }        
+        }
     }
 
-    mountInitialState() {
+    mountInitialState(gameMode) {
         const pieces = [];
         for (let i = 0; i < GameDefintions.NUM_ROWS; i++) {
             const lineNumberRest = Math.trunc((i) / GameDefintions.NUM_ROWS_BY_LINE);
@@ -68,7 +80,8 @@ export class Game extends React.Component {
             pieces: pieces,
             whitesCount: 12,
             blacksCount: 12,
-            count: 1
+            count: 1,
+            gameMode: gameMode
         }
     }
 
@@ -324,14 +337,7 @@ export class Game extends React.Component {
     existsPossibleMove(color) {
         for (let position = 0; position < GameDefintions.NUM_ROWS; position++) {
             const piece = this.state.pieces[position];
-            if (piece != null && piece.color === color) {
-                let positionedPiece = new PositionedPiece(piece.color, piece.type, position);
-                if (this.turnInfo.piecesPossibleMoves[position] == null) {
-                    if (positionedPiece.type === PieceTypes.MAN)
-                        this.turnInfo.piecesPossibleMoves[position] = this.getManMoves(positionedPiece);
-                    else
-                        this.turnInfo.piecesPossibleMoves[position] = this.getKingMoves(positionedPiece);
-                }
+            if (piece != null && piece.color === color && this.turnInfo.piecesPossibleMoves[position]) {
                 if (this.turnInfo.piecesPossibleMoves[position].length > 0) {
                     return true;
                 }
@@ -349,13 +355,13 @@ export class Game extends React.Component {
         if (this.turnInfo.finished) {
             for (let p of this.turnInfo.capturedPiecePositions) {
                 pieces[p] = null;
-            }            
+            }
             whiteIsNext = !this.state.whiteIsNext;
             if (this.canPutTheCrown(pieces[dropPosition], dropPosition)) {
                 pieces[dropPosition].type = PieceTypes.KING;
-            }            
-            const currentColor = whiteIsNext ? ColorTypes.WHITE : ColorTypes.BLACK; 
-            this.turnInfo = new TurnInfo(currentColor);            
+            }
+            const currentColor = whiteIsNext ? ColorTypes.WHITE : ColorTypes.BLACK;
+            this.turnInfo = new TurnInfo(currentColor);
         }
         const [blacksCount, whitesCount] = this.getPieceQuantities(pieces);
         this.setState({
@@ -366,6 +372,9 @@ export class Game extends React.Component {
             whiteIsNext: whiteIsNext
         });
         this.updatePossibleMoves();
+        if (!whiteIsNext && this.state.gameMode === GameMode.AGAINST_COMPUTER) {
+            this.doComputerPlay();
+        }
     }
 
     canPutTheCrown(piece, position) {
@@ -476,6 +485,34 @@ export class Game extends React.Component {
         }
     }
 
+    doComputerPlay() {
+        let qtdTotal = 0;
+        for (let position = 0; position < GameDefintions.NUM_ROWS; position++) {
+            if (this.turnInfo.piecesPossibleMoves[position]) {
+                qtdTotal += this.turnInfo.piecesPossibleMoves[position].length
+            }
+        }
+        let moveChosen = Math.trunc(Math.random(qtdTotal) * qtdTotal);
+        let iPos = 0;
+        for (let position = 0; position < GameDefintions.NUM_ROWS; position++) {
+            if (this.turnInfo.piecesPossibleMoves[position] != null) {
+                for (let ppm of this.turnInfo.piecesPossibleMoves[position]) {
+                    iPos += 1;
+                    if (iPos === moveChosen + 1) {
+                        setTimeout(() => {
+                            let dragPosition = this.turnInfo.currentStep > 1 ?
+                                ppm.moves[this.turnInfo.currentStep - 2] :
+                                position;
+                            this.handleMovePiece(dragPosition,
+                                ppm.moves[this.turnInfo.currentStep - 1]);
+                        }, 1500);
+                        return;
+                    }
+                }
+            }
+        }
+    }
+
     render() {
         this.updatePossibleMoves();
         const winner = this.getTheWinner();
@@ -507,7 +544,13 @@ export class Game extends React.Component {
                     <p>{status}</p>
                     <p>Whites: {this.state.whitesCount}</p>
                     <p>Blacks: {this.state.blacksCount}</p>
-                    <p><button onClick={this.restartGame}>Restart</button></p>                    
+                    <p><button onClick={this.restartGame}>Restart</button></p>
+                    <p>Adversary:<br />
+                        <select name="gameMode" id="gameMode" value={this.state.gameMode} onChange={this.handleGameModeChange}>
+                            <option value={GameMode.ALONE}>Yourself</option>
+                            <option value={GameMode.AGAINST_COMPUTER}>Computer</option>
+                        </select>
+                    </p>
                 </div>
                 <div className="game-footer clearfix">
                     <span>Criado por<br /><b>Tiago Peterlevitz Zini</b></span>

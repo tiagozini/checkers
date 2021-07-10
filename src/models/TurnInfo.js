@@ -9,6 +9,7 @@ export class TurnInfo {
     finished = null;
     numPossibleSteps = null;
     originalPosition = null;
+    piecesPossibleMoves = [];
 
     constructor(playerColor) {
         this.currentStep = 1;
@@ -16,6 +17,7 @@ export class TurnInfo {
         this.capturedPiecePositions = [];
         this.finished = false;
         this.playerColor = playerColor;
+        this.piecesPossibleMoves = [];
     }
 
     updatePossibleMoves(piecesPossibleMoves) {
@@ -81,6 +83,8 @@ export class TurnInfo {
         if (lastCapturedPiece) {
             this.capturedPiecePositions.push(lastCapturedPiece);
         }
-        this.currentStep++;
+        if (!this.finished) {
+            this.currentStep++;
+        }
     }
 }

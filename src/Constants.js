@@ -39,3 +39,8 @@ export const GameDefintions = {
   NUM_ROWS_BY_LINE : 8,
   NUM_ROWS : 64
 }
+
+export const GameMode = {
+  AGAINST_COMPUTER : 'AGAINST_COMPUTER',
+  ALONE : 'ALONE'
+}

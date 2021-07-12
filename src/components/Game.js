@@ -6,7 +6,7 @@ import { Board } from './Board';
 
 import {
     ColorTypes, PieceTypes, PossibleMoveType, PlayerNames, DiagonalTypes,
-    GameDefintions, GameMode
+    GameDefintions, GameMode, DraggableCapability
 } from '../Constants';
 import { TurnInfo } from '../models/TurnInfo';
 
@@ -337,10 +337,25 @@ export class Game extends React.Component {
     existsPossibleMove(color) {
         for (let position = 0; position < GameDefintions.NUM_ROWS; position++) {
             const piece = this.state.pieces[position];
-            if (piece != null && piece.color === color && this.turnInfo.piecesPossibleMoves[position]) {
-                if (this.turnInfo.piecesPossibleMoves[position].length > 0) {
+            if (piece != null && piece.color === color) {
+                if (this.turnInfo.currentStep === 1 && this.turnInfo.piecesPossibleMoves[position]) {
                     return true;
                 }
+                for (let position2 = 0; position2 < GameDefintions.NUM_ROWS; position2++) {
+                    if (
+                        this.turnInfo.piecesPossibleMoves[position2]) {
+                        for (let ppm of this.turnInfo.piecesPossibleMoves[position2]) {
+                            if (ppm.moves.length >= this.turnInfo.currentStep &&
+                                this.turnInfo.currentStep > 1 &&
+                                ppm.moves[this.turnInfo.currentStep - 2] === position) {
+                                return true;
+                            }
+                        }
+                    }
+                }
+                //if (this.turnInfo.piecesPossibleMoves[position].length > 0) {
+                //   return true;
+                // }
             }
         }
         return false;
@@ -390,10 +405,29 @@ export class Game extends React.Component {
             (!this.state.whiteIsNext && ColorTypes.BLACK === positionedPiece.color)
         )) {
             const position = positionedPiece.position;
-            return this.possibleMoves[position] != null &&
-                this.possibleMoves[position].length > 0;
+            if (this.turnInfo.currentStep === 1) {
+                if (this.possibleMoves[position] != null &&
+                    this.possibleMoves[position].length > 0) {
+                    return (!this.state.whiteIsNext &&
+                        this.state.gameMode === GameMode.AGAINST_COMPUTER ?
+                        DraggableCapability.COMPUTER_CAN : DraggableCapability.PLAYER_CAN);
+                }
+            } else {
+                if (this.possibleMoves[this.turnInfo.originalPosition] != null &&
+                    this.possibleMoves[this.turnInfo.originalPosition].length > 0) {
+                    for (let pm of this.possibleMoves[this.turnInfo.originalPosition]) {
+                        if (pm.moves.length >= this.turnInfo.currentStep &&
+                            pm.moves[this.turnInfo.currentStep - 2] === positionedPiece.position) {
+                            return (!this.state.whiteIsNext &&
+                                this.state.gameMode === GameMode.AGAINST_COMPUTER ?
+                                DraggableCapability.COMPUTER_CAN : DraggableCapability.PLAYER_CAN);
+
+                        }
+                    }
+                }
+            }
         }
-        return false;
+        return DraggableCapability.CANNOT;
     }
 
     isThePieceTurn(piece) {

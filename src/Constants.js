@@ -1,46 +1,52 @@
 export const ColorTypes = {
   WHITE: 'white',
-  BLACK: 'black'  
+  BLACK: 'black'
 }
 
 export const PlayerNames = {
   WHITE: 'White',
-  BLACK: 'Black'  
+  BLACK: 'Black'
 }
 
 export const PieceTypes = {
   KING: 'KING',
-  MAN: 'MAN'  
-}  
+  MAN: 'MAN'
+}
 
 export const ItemTypes = {
   PIECE: 'piece'
 }
 
 export const DiagonalTypes = {
-  LEFT_UP : 'left-up',
-  LEFT_DOWN : 'left-down',
-  RIGHT_UP : 'right-up',
-  RIGHT_DOWN : 'right-down'
+  LEFT_UP: 'left-up',
+  LEFT_DOWN: 'left-down',
+  RIGHT_UP: 'right-up',
+  RIGHT_DOWN: 'right-down'
 }
 
 export const ColorCss = {
-  WHITE : 'white',
+  WHITE: 'white',
   GRAY: "#aaaaaa"
 }
 
 export const PossibleMoveType = {
-  NO_MOVE : 0,
-  LAST_MOVE : 1,
-  PARTIAL_MOVE : 2
+  NO_MOVE: 0,
+  LAST_MOVE: 1,
+  PARTIAL_MOVE: 2
 }
 
 export const GameDefintions = {
-  NUM_ROWS_BY_LINE : 8,
-  NUM_ROWS : 64
+  NUM_ROWS_BY_LINE: 8,
+  NUM_ROWS: 64
 }
 
 export const GameMode = {
-  AGAINST_COMPUTER : 'AGAINST_COMPUTER',
-  ALONE : 'ALONE'
+  AGAINST_COMPUTER: 'AGAINST_COMPUTER',
+  ALONE: 'ALONE'
+}
+
+export const DraggableCapability = {
+  PLAYER_CAN: 1,
+  CANNOT: 0,
+  COMPUTER_CAN: -1
 }

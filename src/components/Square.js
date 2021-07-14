@@ -3,11 +3,11 @@ import { ColorCss } from '../Constants';
 
 export class Square extends React.Component {
     constructor(props) {
-        super(props);   
-        this.state = { 
-            position :  Number.parseInt(this.props.position, 10),
-            piece : this.props.piece,
-            children : this.props.children
+        super(props);
+        this.state = {
+            position: Number.parseInt(this.props.position, 10),
+            piece: this.props.piece,
+            children: this.props.children
         };
         this.onClick = this.props.onClick;
     }
@@ -20,19 +20,19 @@ export class Square extends React.Component {
         const posicaoInt = Number.parseInt(this.props.position, 10);
         const lineNumberRest = Math.trunc((posicaoInt) / 8);
         const even = ((lineNumberRest + posicaoInt) % 2) === 0;
-        const bgColor = even ? ColorCss.WHITE : ColorCss.GRAY; //ColorTypes.BLACK ;
+        const bgColor = even ? ColorCss.WHITE : ColorCss.GRAY;
         const piece = this.state.piece;
         if (piece != null) {
             return (
                 <div className="square"
-                    style={{backgroundColor: bgColor}}>    
-                    {this.state.children}                
-                </div>            
+                    style={{ backgroundColor: bgColor }}>
+                    {this.state.children}
+                </div>
             );
-            } else {
+        } else {
             return (
                 <div className="square"
-                    style={{backgroundColor: bgColor}} >&nbsp;</div>
+                    style={{ backgroundColor: bgColor }} >&nbsp;</div>
             );
         }
     }

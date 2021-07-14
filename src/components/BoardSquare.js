@@ -17,17 +17,17 @@ export default function BoardSquare(props) {
    * undefined when is possible, but not as final position, just as part of trajetory
    */
   function canMovePiece(positionedPiece, targetPosition) {
-    if (props.piece == null && positionedPiece !=null) {
-      const codCanMove = props.handleCanMovePiece(positionedPiece, targetPosition);
+    if (props.piece == null && positionedPiece != null) {
+      const codCanMove = props.handleCanDropPiece(positionedPiece, targetPosition);
       if (codCanMove === PossibleMoveType.PARTIAL_MOVE) {
         return undefined;
       }
       return codCanMove === PossibleMoveType.LAST_MOVE;
     }
-    return false;      
+    return false;
   }
 
-  const [{ isOver, canDrop  }, drop] = useDrop(() => ({
+  const [{ isOver, canDrop }, drop] = useDrop(() => ({
     accept: ItemTypes.PIECE,
     drop: (positionedPiece, monitor) => movePiece(positionedPiece.position, props.position),
     canDrop: (positionedPiece, monitor) => canMovePiece(positionedPiece, props.position),
@@ -37,12 +37,12 @@ export default function BoardSquare(props) {
     }),
   }), [props.position])
 
-  return (<div ref={drop} className="board-square"><Square position={props.position} 
-        piece={props.piece}>{props.children}</Square>
-      {isOver && canDrop === false && <Overlay color="red" />}
-      {!isOver && canDrop && <Overlay color="yellow" />}
-      {isOver && canDrop && <Overlay color="green" />}
-      {!isOver && canDrop === undefined && <Overlay color="orange" />}
-      {isOver && canDrop === undefined && <Overlay color="red" />}
-    </div>);
+  return (<div ref={drop} className="board-square"><Square position={props.position}
+    piece={props.piece}>{props.children}</Square>
+    {isOver && canDrop === false && <Overlay color="red" />}
+    {!isOver && canDrop && <Overlay color="yellow" />}
+    {isOver && canDrop && <Overlay color="green" />}
+    {!isOver && canDrop === undefined && <Overlay color="orange" />}
+    {isOver && canDrop === undefined && <Overlay color="red" />}
+  </div>);
 }

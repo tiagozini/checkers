@@ -11,6 +11,7 @@ export default function Piece(props) {
   const type = props.type;
   const color = props.color;
   const draggable = props.canDrag;
+  const didComputerLastMove = props.didComputerLastMove;
 
   let url = null;
 
@@ -37,6 +38,10 @@ export default function Piece(props) {
     if (draggable === DraggableCapability.COMPUTER_CAN) {
       style.backgroundColor = "lightGreen";
     }
+    if (didComputerLastMove) {
+      style.backgroundColor = "green";
+    }
+
     return style;
   };
 
@@ -46,6 +51,7 @@ export default function Piece(props) {
     url = (color === ColorTypes.WHITE ? imgPieceKingWhite : imgPieceKingBlack);
   }
   return <img
+    className="piece"
     ref={drag} alt=""
     style={getStyle(drag)}
     src={url} />

@@ -14,23 +14,26 @@ export class Board extends React.Component {
             this.possibleMoves.push(null);
         }
         this.handleMovePiece = props.handleMovePiece.bind(this);
-        this.handleCanMovePiece = props.handleCanMovePiece.bind(this);
+        this.handleCanDropPiece = props.handleCanDropPiece.bind(this);
         this.handleCanDragPiece = props.handleCanDragPiece.bind(this);
+        this.isLastComputerPosition = props.isLastComputerPosition.bind(this);
     }
 
     renderSquare(position) {
         const piece = this.props.pieces[position];
+        const didComputerLastMove = this.isLastComputerPosition(position);
         return (
             <div key={"" + position + "-" + this.props.count + "-" + this.props.whiteIsNext}
                 className="game-board-square" id={"game-board-square-" + position} >
                 <BoardSquare
                     position={position}
                     handleMovePiece={this.handleMovePiece}
-                    handleCanMovePiece={this.handleCanMovePiece}
+                    handleCanDropPiece={this.handleCanDropPiece}
                     whiteIsNext={this.props.whiteIsNext}
                     count={this.props.count}
                     piece={piece} >
                     {piece != null && <Piece color={piece.color}
+                        didComputerLastMove={didComputerLastMove}
                         type={piece.type}
                         position={position}
                         canDrag={this.handleCanDragPiece(new PositionedPiece(piece.color, piece.type,

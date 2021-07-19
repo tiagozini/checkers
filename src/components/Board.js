@@ -5,6 +5,7 @@ import { PositionedPiece } from '../models/PositionedPiece';
 
 import { TouchBackend } from 'react-dnd-touch-backend'
 import { DndProvider } from 'react-dnd'
+import { GameDefintions } from '../Constants';
 
 export class Board extends React.Component {
     constructor(props) {
@@ -52,7 +53,7 @@ export class Board extends React.Component {
             <DndProvider backend={TouchBackend} options={backendOptions}>
                 {Array.from(Array(this.props.numRowsByLine).keys()).map((lineNumber) =>
                     Array.from(Array(this.props.numRowsByLine).keys()).map((rowNumber) =>
-                        this.renderSquare((lineNumber) * this.props.numRowsByLine + rowNumber)
+                        this.renderSquare(GameDefintions.NUM_ROWS - 1 - ((lineNumber) * this.props.numRowsByLine + rowNumber))
                     )
                 )}
             </DndProvider>

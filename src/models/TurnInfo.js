@@ -12,6 +12,7 @@ export class TurnInfo {
     originalPosition = null;
     piecesPossibleMoves = [];
     lastComputerPosition = null;
+    computerPlayerChoice = null;
 
     constructor(whiteIsNext, pieces, lastComputerPosition) {
         this.currentStep = 1;
@@ -22,6 +23,12 @@ export class TurnInfo {
         this.piecesPossibleMoves = CheckersHelper.getPossibleMoves(pieces.slice(), whiteIsNext);
         this.numPossibleSteps = this.getNumPossibleMoves(this.piecesPossibleMoves);
         this.lastComputerPosition = lastComputerPosition;
+    }
+
+    registerComputerPlay(piecePossibleMoves) {
+        this.computerPlayerChoice = {
+            ppm: piecePossibleMoves
+        };
     }
 
     getNumPossibleMoves(piecesPossibleMoves) {

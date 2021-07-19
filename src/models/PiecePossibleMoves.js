@@ -1,6 +1,6 @@
 export class PiecePossibleMoves {
     moves = [];
-    piecesCaptured  = []; 
+    piecesCaptured = [];
 
     constructor(moves, piecesCaptured) {
         this.moves = moves;

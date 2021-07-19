@@ -58,5 +58,11 @@ export const MinMaxPoints = {
   MOVE_MAN: 1,
   MOVE_KING: 2,
   ELIMINATE_LAST_PIECE: 1000,
-  IMPOSSIBILATE_MORE_MOVES: 1000
+  IMPOSSIBILITY_MORE_MOVES: 1000
+}
+
+export const ComputerLevel = {
+  DUMMY: 0,
+  SMART: 1,
+  GENIUS: 2
 }

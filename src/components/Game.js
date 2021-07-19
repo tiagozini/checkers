@@ -1,10 +1,11 @@
 import React from 'react';
 import CheckersHelper from '../models/CheckersHelper';
+import CheckersMinMax from '../models/CheckersMinMax';
 import { Board } from './Board';
 
 import {
     PieceTypes, PossibleMoveType, PlayerNames,
-    GameDefintions, GameMode, DraggableCapability
+    GameDefintions, GameMode, DraggableCapability, ComputerLevel
 } from '../Constants';
 import { TurnInfo } from '../models/TurnInfo';
 
@@ -13,7 +14,8 @@ export class Game extends React.Component {
 
     constructor(props) {
         super(props);
-        let state = this.mountInitialState(GameMode.AGAINST_COMPUTER);
+        let state = this.mountInitialState(GameMode.AGAINST_COMPUTER,
+            ComputerLevel.DUMMY);
         this.state = state;
         this.turnInfo = new TurnInfo(true, state.pieces, null);
         this.handleMovePiece = this.handleMovePiece.bind(this);
@@ -21,6 +23,7 @@ export class Game extends React.Component {
         this.handleCanDragPiece = this.handleCanDragPiece.bind(this);
         this.restartGame = this.restartGame.bind(this);
         this.handleGameModeChange = this.handleGameModeChange.bind(this);
+        this.handleComputerLevelChange = this.handleComputerLevelChange.bind(this);
         this.doComputerPlay = this.doComputerPlay.bind(this);
         this.isLastComputerPosition = this.isLastComputerPosition.bind(this);
     }
@@ -30,24 +33,36 @@ export class Game extends React.Component {
             clearTimeout(this.computerDragTimer);
         }
         let gameMode = document.getElementById("gameMode").value;
-        this.setState(this.mountInitialState(gameMode));
+        let computerLevel = document.getElementById("computerLevel") ?
+            document.getElementById("computerLevel").value : null;
+        this.setState(this.mountInitialState(gameMode, computerLevel));
         this.turnInfo = new TurnInfo(true, CheckersHelper.mountInitialPieces(), null);
     }
 
     handleGameModeChange(e) {
         let value = e.target.value;
-        this.setState({ ...this.state, gameMode: value });
+        this.setState({
+            ...this.state, gameMode: value,
+            computerLevel: ComputerLevel.DUMMY
+        });
         this.restartGame();
     }
 
-    mountInitialState(gameMode) {
+    handleComputerLevelChange(e) {
+        let value = e.target.value;
+        this.setState({ ...this.state, computerLevel: value });
+        this.restartGame();
+    }
+
+    mountInitialState(gameMode, computerLevel) {
         return {
             whiteIsNext: true,
             pieces: CheckersHelper.mountInitialPieces(),
             whitesCount: 12,
             blacksCount: 12,
             count: 1,
-            gameMode: gameMode
+            gameMode: gameMode,
+            computerLevel: computerLevel
         }
     }
 
@@ -91,7 +106,7 @@ export class Game extends React.Component {
             whiteIsNext: whiteIsNext
         });
         if (!whiteIsNext && gameMode === GameMode.AGAINST_COMPUTER) {
-            this.doComputerPlay();
+            this.doComputerPlay(this.state.computerLevel);
         }
     }
 
@@ -118,7 +133,27 @@ export class Game extends React.Component {
         }
     }
 
-    doComputerPlay() {
+    doComputerFirstMove(computerLevel) {
+        let checkLevel = null;
+        if (ComputerLevel.DUMMY === computerLevel) {
+            return this.doComputerFirstMoveDummy();
+        } else if (ComputerLevel.SMART === computerLevel) {
+            checkLevel = 2;
+        } else if (ComputerLevel.GENIUS === computerLevel) {
+            checkLevel = 3;
+        }
+        let deep = checkLevel * 2;
+        console.log(this.state.pieces);
+        const [position, ppm] = CheckersMinMax.negamax(
+            this.state.pieces.slice(), this.state.whiteIsNext,
+            deep, deep);
+        console.log(position);
+        console.log(ppm);
+        this.turnInfo.registerComputerPlay(ppm);
+        this.doComputerDrag(position, ppm);
+    }
+
+    doComputerFirstMoveDummy() {
         let qtdTotal = 0;
         for (let position = 0; position < GameDefintions.NUM_ROWS; position++) {
             if (this.turnInfo.piecesPossibleMoves[position]) {
@@ -132,11 +167,21 @@ export class Game extends React.Component {
                 for (let ppm of this.turnInfo.piecesPossibleMoves[position]) {
                     iPos += 1;
                     if (iPos === moveChosen + 1) {
+                        this.turnInfo.registerComputerPlay(ppm);
                         this.doComputerDrag(position, ppm);
                         return;
                     }
                 }
             }
+        }
+    }
+
+    doComputerPlay(computerLevel) {
+        if (this.turnInfo.currentStep === 1) {
+            this.doComputerFirstMove(computerLevel);
+        } else {
+            const ppm = this.turnInfo.computerPlayerChoice.ppm;
+            this.doComputerDrag(ppm.moves[this.currentStep - 1], ppm);
         }
     }
 
@@ -194,6 +239,17 @@ export class Game extends React.Component {
                             <option value={GameMode.AGAINST_COMPUTER}>Computer</option>
                         </select>
                     </p>
+                    {this.state.gameMode === GameMode.AGAINST_COMPUTER ?
+                        <p>Computer level:<br />
+                            <select name="computerLevel" id="computerLevel"
+                                value={this.state.computerLevel}
+                                onChange={this.handleComputerLevelChange}>
+                                <option value={ComputerLevel.DUMMY}>Dummy</option>
+                                <option value={ComputerLevel.SMART}>Smart</option>
+                                <option value={ComputerLevel.GENIUS}>Genius</option>
+                            </select>
+                        </p>
+                        : null}
                 </div>
                 <div className="game-footer clearfix">
                     <span>Criado por<br /><b>Tiago Peterlevitz Zini</b></span>

@@ -334,7 +334,7 @@ export default class CheckersHelper {
     }
 
     static canDragPiece(turnInfo, positionedPiece) {
-        if (positionedPiece == null || turnInfo.playerColor !== positionedPiece.color) {
+        if (positionedPiece === null || turnInfo.playerColor !== positionedPiece.color) {
             return false;
         }
         const position = positionedPiece.position;
@@ -375,5 +375,13 @@ export default class CheckersHelper {
             }
         }
         return false;
+    }
+
+    static getPieces(pieces, positions) {
+        let piecesSubList = [];
+        for (let position of positions) {
+            piecesSubList.push(pieces[position]);
+        }
+        return piecesSubList;
     }
 }

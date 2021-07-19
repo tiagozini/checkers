@@ -10,10 +10,11 @@ export default class CheckersMinMax {
         const piecesCapturedType =
             CheckersHelper.getPieces(pieces, ppm.piecesCaptured).map(
                 (p) => p.type);
+        let oldType = pieces[originalPosition].type;
         CheckersMinMax.applyTurnMoviments(pieces, originalPosition, ppm);
         points += 0 - CheckersMinMax.negamax(pieces, !whiteIsNext, deep - 1);
         CheckersMinMax.unapplyTurnMoviments(pieces, originalPosition, ppm,
-            piecesCapturedType);
+            piecesCapturedType, oldType);
         return points;
     }
 
@@ -62,9 +63,11 @@ export default class CheckersMinMax {
         pieces[newPosition] = piece;
     }
 
-    static unapplyTurnMoviments(pieces, originalPosition, ppm, piecesCapturedType) {
+    static unapplyTurnMoviments(pieces, originalPosition, ppm, piecesCapturedType,
+        oldType) {
         let currentPosition = ppm.moves[ppm.moves.length - 1];
         let piece = pieces[currentPosition];
+        piece.type = oldType;
         let enemyColor = piece.color === ColorTypes.WHITE ? ColorTypes.BLACK : ColorTypes.WHITE;
         pieces[originalPosition] = piece;
         if (ppm.piecesCaptured) {

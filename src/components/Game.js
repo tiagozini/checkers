@@ -138,17 +138,14 @@ export class Game extends React.Component {
         if (ComputerLevel.DUMMY === computerLevel) {
             return this.doComputerFirstMoveDummy();
         } else if (ComputerLevel.SMART === computerLevel) {
-            checkLevel = 2;
+            checkLevel = 1;
         } else if (ComputerLevel.GENIUS === computerLevel) {
             checkLevel = 3;
         }
         let deep = checkLevel * 2;
-        console.log(this.state.pieces);
         const [position, ppm] = CheckersMinMax.negamax(
             this.state.pieces.slice(), this.state.whiteIsNext,
             deep, deep);
-        console.log(position);
-        console.log(ppm);
         this.turnInfo.registerComputerPlay(ppm);
         this.doComputerDrag(position, ppm);
     }
@@ -240,7 +237,7 @@ export class Game extends React.Component {
                         </select>
                     </p>
                     {this.state.gameMode === GameMode.AGAINST_COMPUTER ?
-                        <p>Computer level:<br />
+                        <p>Level:<br />
                             <select name="computerLevel" id="computerLevel"
                                 value={this.state.computerLevel}
                                 onChange={this.handleComputerLevelChange}>

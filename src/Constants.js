@@ -62,7 +62,7 @@ export const MinMaxPoints = {
 }
 
 export const ComputerLevel = {
-  DUMMY: 0,
-  SMART: 1,
-  GENIUS: 2
+  DUMMY: 'DUMMY',
+  SMART: 'SMART',
+  GENIUS: 'GENIUS'
 }

@@ -50,3 +50,13 @@ export const DraggableCapability = {
   CANNOT: 0,
   COMPUTER_CAN: -1
 }
+
+export const MinMaxPoints = {
+  CAPTURE_KING: 15,
+  CAPUTRE_MAN: 10,
+  BECAME_KING: 20,
+  MOVE_MAN: 1,
+  MOVE_KING: 2,
+  ELIMINATE_LAST_PIECE: 1000,
+  IMPOSSIBILATE_MORE_MOVES: 1000
+}

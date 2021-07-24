@@ -105,6 +105,9 @@ export class Game extends React.Component {
             whitesCount: whitesCount,
             whiteIsNext: whiteIsNext
         });
+        if (this.turnInfo.movesChosen.length > this.turnInfo.currentStep) {
+            this.turnInfo.updateOriginalPosition(dragPosition);
+        }
         if (!whiteIsNext && gameMode === GameMode.AGAINST_COMPUTER) {
             this.doComputerPlay(this.state.computerLevel);
         }

@@ -1,20 +1,20 @@
 import { ColorTypes, MinMaxPoints, PieceTypes } from "../Constants";
 import CheckersHelper from "./CheckersHelper";
-import { Piece } from "./Piece";
 import { TurnInfo } from "./TurnInfo";
 
 export default class CheckersMinMax {
 
     static getMMTurnMovementsPoints(pieces, originalPosition, ppm, whiteIsNext, deep) {
         let points = CheckersMinMax.getTurnMovementsPoints(pieces, originalPosition, ppm);
-        const piecesCapturedType =
-            CheckersHelper.getPieces(pieces, ppm.piecesCaptured).map(
-                (p) => p.type);
         let oldType = pieces[originalPosition].type;
+        let backupPieces = [];
+        for (let position of ppm.piecesCaptured) {
+            backupPieces.push(pieces[position]);
+        }
         CheckersMinMax.applyTurnMoviments(pieces, originalPosition, ppm);
         points += 0 - CheckersMinMax.negamax(pieces, !whiteIsNext, deep - 1);
         CheckersMinMax.unapplyTurnMoviments(pieces, originalPosition, ppm,
-            piecesCapturedType, oldType);
+            backupPieces, oldType);
         return points;
     }
 
@@ -30,15 +30,17 @@ export default class CheckersMinMax {
         let maxPoints = null;
         let bestPpm = null;
         let bestPosition = null;
-        for (let posicao = 0; posicao < turnInfo.piecesPossibleMoves.length; posicao++) {
-            if (turnInfo.piecesPossibleMoves[posicao]) {
-                points = 0;
-                for (let piecePossibleMoves of turnInfo.piecesPossibleMoves[posicao]) {
-                    points = CheckersMinMax.getMMTurnMovementsPoints(pieces, posicao,
+        // issues to think:
+        // - piecesPossibleMoves <- entidades desconectadas... sempre novas
+        // - pieces - > Piece <- mesma inicial <- "se perde" na remoção <- não remover... bolar outra coisa
+        for (let position = 0; position < turnInfo.piecesPossibleMoves.length; position++) {
+            if (turnInfo.piecesPossibleMoves[position]) {
+                for (let piecePossibleMoves of turnInfo.piecesPossibleMoves[position]) {
+                    points = CheckersMinMax.getMMTurnMovementsPoints(pieces, position,
                         piecePossibleMoves, whiteIsNext, deep);
                     if (maxPoints === null || points > maxPoints) {
                         maxPoints = points;
-                        bestPosition = posicao;
+                        bestPosition = position;
                         bestPpm = piecePossibleMoves;
                     }
                 }
@@ -53,8 +55,8 @@ export default class CheckersMinMax {
     static applyTurnMoviments(pieces, originalPosition, ppm) {
         let piece = pieces[originalPosition];
         pieces[originalPosition] = null;
-        for (let posicao of ppm.piecesCaptured) {
-            pieces[posicao] = null;
+        for (let position of ppm.piecesCaptured) {
+            pieces[position] = null;
         }
         const newPosition = ppm.moves[ppm.moves.length - 1];
         if (CheckersHelper.canPutTheCrown(piece, newPosition)) {
@@ -63,16 +65,15 @@ export default class CheckersMinMax {
         pieces[newPosition] = piece;
     }
 
-    static unapplyTurnMoviments(pieces, originalPosition, ppm, piecesCapturedType,
+    static unapplyTurnMoviments(pieces, originalPosition, ppm, backupPieces,
         oldType) {
         let currentPosition = ppm.moves[ppm.moves.length - 1];
         let piece = pieces[currentPosition];
         piece.type = oldType;
-        let enemyColor = piece.color === ColorTypes.WHITE ? ColorTypes.BLACK : ColorTypes.WHITE;
         pieces[originalPosition] = piece;
         if (ppm.piecesCaptured) {
             for (let i = 0; i < ppm.piecesCaptured.length; i++) {
-                pieces[ppm.piecesCaptured[i]] = new Piece(enemyColor, piecesCapturedType[i]);
+                pieces[ppm.piecesCaptured[i]] = backupPieces[i];
             }
         }
         pieces[currentPosition] = null;

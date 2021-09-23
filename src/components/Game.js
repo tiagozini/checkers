@@ -252,7 +252,7 @@ export class Game extends React.Component {
                         : null}
                 </div>
                 <div className="game-footer clearfix">
-                    <span>Criado por<br /><b>Tiago Peterlevitz Zini</b></span>
+                    <span>Created by<br /><b>Tiago Peterlevitz Zini</b></span>
                     <span><b>&copy; 2021</b></span>
                     <span><a href="https://github.com/tiagozini" target="blank">tiagozini@github.com</a></span>
                 </div>

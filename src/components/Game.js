@@ -204,7 +204,7 @@ export class Game extends React.Component {
         let status;
 
         if (winner) {
-            status = <span>Winner: <b>{winner}</b></span>;
+            status = <span><b><font color="red">Winner</font> <font style={{ backgroundColor: "yellow" }}></font>{winner}!</b></span>;
         } else {
             status = <span>Next player: <b>{this.state.whiteIsNext ? 'White' : 'Black'}</b></span>;
         }

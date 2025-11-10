@@ -4,6 +4,8 @@ import Piece from './Piece';
 import { PositionedPiece } from '../models/PositionedPiece';
 
 import { TouchBackend } from 'react-dnd-touch-backend'
+import { HTML5Backend } from 'react-dnd-html5-backend'
+import { isDesktop } from 'react-device-detect';
 import { DndProvider } from 'react-dnd'
 import { GameDefintions } from '../Constants';
 
@@ -49,8 +51,9 @@ export class Board extends React.Component {
         const backendOptions = {
             enableMouseEvents: true
         }
+        const backend=isDesktop ? HTML5Backend : TouchBackend;
         return (
-            <DndProvider backend={TouchBackend} options={backendOptions}>
+            <DndProvider backend={backend} options={backendOptions}>
                 {Array.from(Array(this.props.numRowsByLine).keys()).map((lineNumber) =>
                     Array.from(Array(this.props.numRowsByLine).keys()).map((rowNumber) =>
                         this.renderSquare(GameDefintions.NUM_ROWS - 1 - ((lineNumber) * this.props.numRowsByLine + rowNumber))

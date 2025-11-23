@@ -2,7 +2,7 @@ import React from 'react';
 import CheckersHelper from '../models/CheckersHelper';
 import CheckersMinMax from '../models/CheckersMinMax';
 import { Board } from './Board';
-
+import Overlay from './Overlay';
 import {
     PieceTypes, PossibleMoveType, PlayerNames,
     GameDefintions, GameMode, DraggableCapability, ComputerLevel
@@ -21,22 +21,26 @@ export class Game extends React.Component {
         this.handleMovePiece = this.handleMovePiece.bind(this);
         this.handleCanDropPiece = this.handleCanDropPiece.bind(this);
         this.handleCanDragPiece = this.handleCanDragPiece.bind(this);
-        this.restartGame = this.restartGame.bind(this);
+        this.restartOrResignGame = this.restartOrResignGame.bind(this);
         this.handleGameModeChange = this.handleGameModeChange.bind(this);
         this.handleComputerLevelChange = this.handleComputerLevelChange.bind(this);
         this.doComputerPlay = this.doComputerPlay.bind(this);
         this.isLastComputerPosition = this.isLastComputerPosition.bind(this);
     }
 
-    restartGame() {
-        if (this.computerDragTimer) {
-            clearTimeout(this.computerDragTimer);
+    restartOrResignGame() {
+        if (this.state.running) {
+           this.setState({...this.state, running: false});
+        } else {
+            if (this.computerDragTimer) {
+                clearTimeout(this.computerDragTimer);
+            }
+            let gameMode = document.getElementById("gameMode").value;
+            let computerLevel = document.getElementById("computerLevel") ?
+                document.getElementById("computerLevel").value : null;
+            this.setState({...this.mountInitialState(gameMode, computerLevel),  running: true });
+            this.turnInfo = new TurnInfo(true, CheckersHelper.mountInitialPieces(), null);
         }
-        let gameMode = document.getElementById("gameMode").value;
-        let computerLevel = document.getElementById("computerLevel") ?
-            document.getElementById("computerLevel").value : null;
-        this.setState(this.mountInitialState(gameMode, computerLevel));
-        this.turnInfo = new TurnInfo(true, CheckersHelper.mountInitialPieces(), null);
     }
 
     handleGameModeChange(e) {
@@ -45,13 +49,11 @@ export class Game extends React.Component {
             ...this.state, gameMode: value,
             computerLevel: ComputerLevel.DUMMY
         });
-        this.restartGame();
     }
 
     handleComputerLevelChange(e) {
         let value = e.target.value;
         this.setState({ ...this.state, computerLevel: value });
-        this.restartGame();
     }
 
     mountInitialState(gameMode, computerLevel) {
@@ -62,7 +64,8 @@ export class Game extends React.Component {
             blacksCount: 12,
             count: 1,
             gameMode: gameMode,
-            computerLevel: computerLevel
+            computerLevel: computerLevel,
+            running: false
         }
     }
 
@@ -87,6 +90,11 @@ export class Game extends React.Component {
     }
 
     handleMovePiece = (dragPosition, dropPosition) => {
+        if (!this.state.running) {
+            alert("Resigned!");
+            return; 
+        }   
+
         const gameMode = this.state.gameMode;
         this.turnInfo.storeMove(dropPosition);
         let pieces = this.state.pieces.slice();
@@ -98,22 +106,30 @@ export class Game extends React.Component {
             whiteIsNext = !whiteIsNext;
         }
         const [whitesCount, blacksCount] = CheckersHelper.getTotalPiecesForColor(pieces);
+        const gameFinished = blacksCount === 0 || whitesCount === 0;
+
         this.setState({
             ...this.state, pieces: pieces,
             count: this.state.count + 1,
             blacksCount: blacksCount,
             whitesCount: whitesCount,
-            whiteIsNext: whiteIsNext
+            whiteIsNext: whiteIsNext,
+            running: !gameFinished
         });
         if (this.turnInfo.movesChosen.length > this.turnInfo.currentStep) {
             this.turnInfo.updateOriginalPosition(dragPosition);
         }
-        if (!whiteIsNext && gameMode === GameMode.AGAINST_COMPUTER) {
-            this.doComputerPlay(this.state.computerLevel);
+        if (gameFinished) {
+            const winner = this.whitesCount === 0 ? "Black" : "White";
+            alert("Victory of " + winner + "!");
+        } else {
+            if (!whiteIsNext && gameMode === GameMode.AGAINST_COMPUTER) {
+                this.doComputerPlay(this.state.computerLevel);
+            }            
         }
     }
 
-    handleCanDragPiece(positionedPiece) {
+    handleCanDragPiece(positionedPiece) {     
         if (CheckersHelper.canDragPiece(this.turnInfo, positionedPiece)) {
             return (!this.state.whiteIsNext &&
                 this.state.gameMode === GameMode.AGAINST_COMPUTER ?
@@ -224,15 +240,18 @@ export class Game extends React.Component {
                         whiteIsNext={this.state.whiteIsNext}
                         pieces={this.state.pieces}
                         count={this.state.count}
+                        running={this.state.running}
                     />
+                    {!this.state.running && <Overlay color="yellow"></Overlay>}      
+
                 </div>
                 <div className="game-info clearfix">
                     <p>{status}</p>
                     <p>Whites: {this.state.whitesCount}</p>
                     <p>Blacks: {this.state.blacksCount}</p>
-                    <p><button onClick={this.restartGame}>Restart</button></p>
                     <p>Adversary:<br />
                         <select name="gameMode" id="gameMode"
+                            disabled={this.state.running}
                             value={this.state.gameMode}
                             onChange={this.handleGameModeChange}>
                             <option value={GameMode.ALONE}>Yourself</option>
@@ -242,6 +261,7 @@ export class Game extends React.Component {
                     {this.state.gameMode === GameMode.AGAINST_COMPUTER ?
                         <p>Level:<br />
                             <select name="computerLevel" id="computerLevel"
+                                disabled={this.state.running}
                                 value={this.state.computerLevel}
                                 onChange={this.handleComputerLevelChange}>
                                 <option value={ComputerLevel.DUMMY}>Dummy</option>
@@ -250,6 +270,7 @@ export class Game extends React.Component {
                             </select>
                         </p>
                         : null}
+                    <p><button onClick={this.restartOrResignGame}>{this.state.running ? "Resign" : "Start"}</button></p>
                 </div>
                 <div className="game-footer clearfix">
                     <span>Created by<br /><b>Tiago Peterlevitz Zini</b></span>

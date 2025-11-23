@@ -2,12 +2,14 @@ import React from 'react';
 import BoardSquare from './BoardSquare';
 import Piece from './Piece';
 import { PositionedPiece } from '../models/PositionedPiece';
+import Overlay from './Overlay';
 
 import { TouchBackend } from 'react-dnd-touch-backend'
 import { HTML5Backend } from 'react-dnd-html5-backend'
 import { isDesktop } from 'react-device-detect';
 import { DndProvider } from 'react-dnd'
 import { GameDefintions } from '../Constants';
+
 
 export class Board extends React.Component {
     constructor(props) {

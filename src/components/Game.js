@@ -120,7 +120,7 @@ export class Game extends React.Component {
             this.turnInfo.updateOriginalPosition(dragPosition);
         }
         if (gameFinished) {
-            const winner = this.whitesCount === 0 ? "Black" : "White";
+            const winner = whitesCount === 0 ? "Black" : "White";
             alert("Victory of " + winner + "!");
         } else {
             if (!whiteIsNext && gameMode === GameMode.AGAINST_COMPUTER) {

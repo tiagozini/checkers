@@ -8,6 +8,8 @@ import {
     GameDefintions, GameMode, DraggableCapability, ComputerLevel
 } from '../Constants';
 import { TurnInfo } from '../models/TurnInfo';
+import imgZoomOut from '../img/zoom-out.png';
+import imgZoonIn from '../img/zoom-in.png';
 
 export class Game extends React.Component {
     computerDragTimer = null;
@@ -26,6 +28,7 @@ export class Game extends React.Component {
         this.handleComputerLevelChange = this.handleComputerLevelChange.bind(this);
         this.doComputerPlay = this.doComputerPlay.bind(this);
         this.isLastComputerPosition = this.isLastComputerPosition.bind(this);
+        this.toogleWindow = this.toogleWindow.bind(this);
     }
 
     restartOrResignGame() {
@@ -65,7 +68,8 @@ export class Game extends React.Component {
             count: 1,
             gameMode: gameMode,
             computerLevel: computerLevel,
-            running: false
+            running: false,
+            gameWindowMode : "game-normal-mode"
         }
     }
 
@@ -106,7 +110,7 @@ export class Game extends React.Component {
             whiteIsNext = !whiteIsNext;
         }
         const [whitesCount, blacksCount] = CheckersHelper.getTotalPiecesForColor(pieces);
-        const gameFinished = blacksCount === 0 || whitesCount === 0;
+        const winner = this.getTheWinner(pieces, whiteIsNext);
 
         this.setState({
             ...this.state, pieces: pieces,
@@ -114,13 +118,12 @@ export class Game extends React.Component {
             blacksCount: blacksCount,
             whitesCount: whitesCount,
             whiteIsNext: whiteIsNext,
-            running: !gameFinished
+            running: !winner
         });
         if (this.turnInfo.movesChosen.length > this.turnInfo.currentStep) {
             this.turnInfo.updateOriginalPosition(dragPosition);
         }
-        if (gameFinished) {
-            const winner = whitesCount === 0 ? "Black" : "White";
+        if (winner) {
             alert("Victory of " + winner + "!");
         } else {
             if (!whiteIsNext && gameMode === GameMode.AGAINST_COMPUTER) {
@@ -215,20 +218,29 @@ export class Game extends React.Component {
         return this.turnInfo.lastComputerPosition && this.turnInfo.lastComputerPosition === position;
     }
 
+    toogleWindow() {
+        this.setState({...this.state, gameWindowMode: this.state.gameWindowMode === 'game-normal-mode' ? "game-window-mode" : "game-normal-mode"});
+    }
+
     render() {
         const winner = this.getTheWinner(this.state.pieces, this.state.whiteIsNext);
+        const baseClass = "game";
+        const typeClass = this.state.gameWindowMode;
         let status;
 
         if (winner) {
             status = <span><b><font color="red">Winner</font> <font style={{ backgroundColor: "yellow" }}></font>{winner}!</b></span>;
         } else {
-            status = <span>Next player: <b>{this.state.whiteIsNext ? 'White' : 'Black'}</b></span>;
+            status = <span>Turn player: <b>{this.state.whiteIsNext ? 'White' : 'Black'}</b></span>;
         }
         return (
-            <div className="game">
+            <div className={`${baseClass} ${typeClass}`}>
                 <div className="game-presentation">
-                    <p>Welcome to Checkers game!</p>
-                </div>
+                    <p>Welcome to Checkers game! 
+                        <a onClick={this.toogleWindow} style={{float:"right", paddingRight:"1em"}}>
+                            <img src={this.state.gameWindowMode === "game-window-mode" ? imgZoomOut : imgZoonIn} style={{"max-height":"1.5em"}}/>
+                        </a></p>
+                       </div>
                 <div className="game-board">
                     <Board
                         isLastComputerPosition={this.isLastComputerPosition}

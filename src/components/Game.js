@@ -11,6 +11,7 @@ import { TurnInfo } from '../models/TurnInfo';
 import imgZoomOut from '../img/zoom-out.png';
 import imgZoonIn from '../img/zoom-in.png';
 import { isMobile } from 'react-device-detect';
+import { FaSearchPlus, FaSearchMinus } from 'react-icons/fa';
 
 export class Game extends React.Component {
     computerDragTimer = null;
@@ -249,10 +250,10 @@ export class Game extends React.Component {
         return (
             <div className={`${baseClass} ${typeClass}`}>
                 <div className="game-presentation">
-                    <p>Welcome to Checkers game! {isMobile ? "**Mobile**" : "**Desktop**"}
-                        {this.isMobileDevice() ? "**Mobile**" : "**Desktop**"}
-                        {" **userAgent=" + this.userAgent2() + "**"}
-                            <img onClick={this.toogleWindow} alt="Zoom" src={this.state.gameWindowMode === "game-window-mode" ? imgZoomOut : imgZoonIn} style={{maxHeight:"1em",float:"right", paddingRight:"1em"}}/>
+                    <p>Welcome to Checkers game! 
+                        <button onClick={this.toogleWindow} className='btn-link'  style={{maxHeight:"1em",float:"right", paddingRight:"1em"}}>
+                            {this.state.gameWindowMode === "game-window-mode" ? <FaSearchPlus/> : <FaSearchMinus/>}
+                        </button>
                     </p>
                 </div>
                 <div className="game-board">
@@ -296,6 +297,7 @@ export class Game extends React.Component {
                             </select>
                         </p>
                         : null}
+                    <p>Plataforma: {isMobile ? "Mobile" : "Desktop"}</p>                    
                     <p><button onClick={this.restartOrResignGame}>{this.state.running ? "Resign" : "Start"}</button></p>
                 </div>
                 <div className="game-footer clearfix">

@@ -10,6 +10,7 @@ import {
 import { TurnInfo } from '../models/TurnInfo';
 import imgZoomOut from '../img/zoom-out.png';
 import imgZoonIn from '../img/zoom-in.png';
+import { isMobile } from 'react-device-detect';
 
 export class Game extends React.Component {
     computerDragTimer = null;
@@ -52,6 +53,14 @@ export class Game extends React.Component {
             ...this.state, gameMode: value,
             computerLevel: ComputerLevel.DUMMY
         });
+    }
+
+    isMobileDevice() {
+        const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+        if (/android|ipad|iphone|ipod|blackberry|iemobile|opera mini/i.test(userAgent)) {
+            return true;
+        }
+        return false;
     }
 
     handleComputerLevelChange(e) {
@@ -236,7 +245,8 @@ export class Game extends React.Component {
         return (
             <div className={`${baseClass} ${typeClass}`}>
                 <div className="game-presentation">
-                    <p>Welcome to Checkers game! 
+                    <p>Welcome to Checkers game! {isMobile ? "**Mobile**" : "**Desktop**"}
+                        {this.isMobileDevice() ? "**Mobile**" : "**Desktop**"}
                             <img onClick={this.toogleWindow} alt="Zoom" src={this.state.gameWindowMode === "game-window-mode" ? imgZoomOut : imgZoonIn} style={{maxHeight:"1em",float:"right", paddingRight:"1em"}}/>
                     </p>
                 </div>

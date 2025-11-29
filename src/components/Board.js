@@ -47,12 +47,20 @@ export class Board extends React.Component {
             </ div>
         );
     }
+    isMobileDevice() {
+        const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+        if (/android|ipad|iphone|ipod|blackberry|iemobile|opera mini/i.test(userAgent)) {
+            return true;
+        }
+        return false;
+    }
 
     render() {
+        
         const backendOptions = {
             enableMouseEvents: true
         }
-        const backend=isMobile  ? TouchBackend : HTML5Backend;
+        const backend=this.isMobileDevice()  ? TouchBackend : HTML5Backend;
         return (
             <DndProvider backend={backend} options={backendOptions}>
                 {Array.from(Array(this.props.numRowsByLine).keys()).map((lineNumber) =>

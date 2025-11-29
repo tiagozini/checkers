@@ -5,7 +5,7 @@ import { PositionedPiece } from '../models/PositionedPiece';
 
 import { TouchBackend } from 'react-dnd-touch-backend'
 import { HTML5Backend } from 'react-dnd-html5-backend'
-import { isDesktop } from 'react-device-detect';
+import { isMobile } from 'react-device-detect';
 import { DndProvider } from 'react-dnd'
 import { GameDefintions } from '../Constants';
 
@@ -46,13 +46,22 @@ export class Board extends React.Component {
                 </BoardSquare>
             </ div>
         );
+    }        
+
+    isMobileDevice() {
+        const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+        if (/android|ipad|iphone|ipod|blackberry|iemobile|opera mini/i.test(userAgent)) {
+            return true;
+        }
+        return false;
     }
 
     render() {
+        
         const backendOptions = {
             enableMouseEvents: true
         }
-        const backend=TouchBackend;
+        const backend=isMobile ? TouchBackend : HTML5Backend;
         return (
             <DndProvider backend={backend} options={backendOptions}>
                 {Array.from(Array(this.props.numRowsByLine).keys()).map((lineNumber) =>

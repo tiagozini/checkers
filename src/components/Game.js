@@ -8,8 +8,12 @@ import {
     GameDefintions, GameMode, DraggableCapability, ComputerLevel
 } from '../Constants';
 import { TurnInfo } from '../models/TurnInfo';
-import imgZoomOut from '../img/zoom-out.png';
-import imgZoonIn from '../img/zoom-in.png';
+import { isMobile } from 'react-device-detect';
+import { FaSearchPlus, FaSearchMinus, FaDesktop, FaMobileAlt, FaInfoCircle } from 'react-icons/fa';
+import imgPieceManWhite from '../img/piece-man-white.png';
+import imgPieceManBlack from '../img/piece-man-black.png';
+import imgPieceKingWhite from '../img/piece-king-white.png';
+import imgPieceKingBlack from '../img/piece-king-black.png';
 
 export class Game extends React.Component {
     computerDragTimer = null;
@@ -38,10 +42,13 @@ export class Game extends React.Component {
             if (this.computerDragTimer) {
                 clearTimeout(this.computerDragTimer);
             }
+            let _gameWindowMode = this.state.gameWindowMode;
             let gameMode = document.getElementById("gameMode").value;
             let computerLevel = document.getElementById("computerLevel") ?
                 document.getElementById("computerLevel").value : null;
-            this.setState({...this.mountInitialState(gameMode, computerLevel),  running: true });
+            this.setState({...this.mountInitialState(gameMode, computerLevel),  
+                running: true,
+                gameWindowMode: _gameWindowMode });
             this.turnInfo = new TurnInfo(true, CheckersHelper.mountInitialPieces(), null);
         }
     }
@@ -52,6 +59,14 @@ export class Game extends React.Component {
             ...this.state, gameMode: value,
             computerLevel: ComputerLevel.DUMMY
         });
+    }
+
+    isMobileDevice() {
+        const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+        if (/android|ipad|iphone|ipod|blackberry|iemobile|opera mini/i.test(userAgent)) {
+            return true;
+        }
+        return false;
     }
 
     handleComputerLevelChange(e) {
@@ -91,6 +106,10 @@ export class Game extends React.Component {
             lastComputerPosition = dropPosition;
         }
         this.turnInfo = new TurnInfo(!whiteIsNext, pieces, lastComputerPosition);
+    }
+
+    handleShowInfoDesktop() {
+        alert("If you are not in a desktop, you need to click on the three dots and uncheck the option \"Site for computer\" to make site behavior for mobile");
     }
 
     handleMovePiece = (dragPosition, dropPosition) => {
@@ -222,6 +241,10 @@ export class Game extends React.Component {
         this.setState({...this.state, gameWindowMode: this.state.gameWindowMode === 'game-normal-mode' ? "game-window-mode" : "game-normal-mode"});
     }
 
+    userAgent2() {
+        return navigator.userAgent || navigator.vendor || window.opera;        
+    }
+
     render() {
         const winner = this.getTheWinner(this.state.pieces, this.state.whiteIsNext);
         const baseClass = "game";
@@ -231,14 +254,33 @@ export class Game extends React.Component {
         if (winner) {
             status = <span><b><font color="red">Winner</font> <font style={{ backgroundColor: "yellow" }}></font>{winner}!</b></span>;
         } else {
-            status = <span>Turn player: <b>{this.state.whiteIsNext ? 'White' : 'Black'}</b></span>;
+            status = <span>Player <b><img src={this.state.whiteIsNext ? imgPieceManWhite : imgPieceManBlack} alt="Player turn" className='small-piece' /></b></span>;
         }
+        const zoomButtonIcon = this.state.gameWindowMode === "game-window-mode" ? <FaSearchMinus/> : <FaSearchPlus/>;
         return (
             <div className={`${baseClass} ${typeClass}`}>
                 <div className="game-presentation">
-                    <p>Welcome to Checkers game! 
-                            <img onClick={this.toogleWindow} alt="Zoom" src={this.state.gameWindowMode === "game-window-mode" ? imgZoomOut : imgZoonIn} style={{maxHeight:"1em",float:"right", paddingRight:"1em"}}/>
-                    </p>
+                    <div className='top-bar'>Checkers
+                        <button onClick={this.toogleWindow} className='btn-link'  style={{maxHeight:"1em",float:"right", paddingRight:"1em"}}>
+                            {zoomButtonIcon}
+                        </button>
+                    </div>
+                    <div className='alternative-top-bar'>
+                        <div style={{width:"25%",float:"left"}}><span>Checkers</span></div>
+                        <div style={{width:"25%",float:"left"}}>
+                            {status}
+                        </div>                        
+                        <div style={{width:"25%",float:"left"}}>
+                          <img src={imgPieceKingWhite} className='small-piece' alt="White´s turn" />{this.state.whitesCount}
+                          <img src={imgPieceKingBlack} className='small-piece' alt="Black´s turn" />{this.state.blacksCount}                            
+                        </div>
+                        <div style={{width:"25%",float:"right"}}>  
+                            <button onClick={this.toogleWindow} className='btn-link'  style={{maxHeight:"1em", paddingRight:"1em"}}>{zoomButtonIcon}</button> 
+                            <button onClick={this.restartOrResignGame} style={{paddingRight:"1em"}}>{this.state.running ? "Resign" : "Start"}</button>                               
+                        </div>
+                    
+                    </div>
+
                 </div>
                 <div className="game-board">
                     <Board
@@ -258,8 +300,9 @@ export class Game extends React.Component {
                 </div>
                 <div className="game-info clearfix">
                     <p>{status}</p>
-                    <p>Whites: {this.state.whitesCount}</p>
-                    <p>Blacks: {this.state.blacksCount}</p>
+                    <hr />
+                    <p><img src={imgPieceKingWhite} className='small-piece' alt="White´s turn" />{this.state.whitesCount}<br/>
+                    <img src={imgPieceKingBlack} className='small-piece' alt="Black´s turn" />{this.state.blacksCount}</p>
                     <p>Adversary:<br />
                         <select name="gameMode" id="gameMode"
                             disabled={this.state.running}
@@ -281,6 +324,11 @@ export class Game extends React.Component {
                             </select>
                         </p>
                         : null}
+                    <p>{isMobile ? <FaMobileAlt/> : (
+                        <div><FaDesktop/> <button className="btn-link" onClick={this.handleShowInfoDesktop}><FaInfoCircle/></button>
+                        </div>)}</p>                    
+                    
+                    
                     <p><button onClick={this.restartOrResignGame}>{this.state.running ? "Resign" : "Start"}</button></p>
                 </div>
                 <div className="game-footer clearfix">

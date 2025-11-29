@@ -61,7 +61,7 @@ export class Board extends React.Component {
         const backendOptions = {
             enableMouseEvents: true
         }
-        const backend=this.isMobileDevice()  ? TouchBackend : HTML5Backend;
+        const backend=isMobile ? TouchBackend : HTML5Backend;
         return (
             <DndProvider backend={backend} options={backendOptions}>
                 {Array.from(Array(this.props.numRowsByLine).keys()).map((lineNumber) =>

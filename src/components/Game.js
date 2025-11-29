@@ -231,6 +231,10 @@ export class Game extends React.Component {
         this.setState({...this.state, gameWindowMode: this.state.gameWindowMode === 'game-normal-mode' ? "game-window-mode" : "game-normal-mode"});
     }
 
+    userAgent2() {
+        return navigator.userAgent || navigator.vendor || window.opera;        
+    }
+
     render() {
         const winner = this.getTheWinner(this.state.pieces, this.state.whiteIsNext);
         const baseClass = "game";
@@ -247,6 +251,7 @@ export class Game extends React.Component {
                 <div className="game-presentation">
                     <p>Welcome to Checkers game! {isMobile ? "**Mobile**" : "**Desktop**"}
                         {this.isMobileDevice() ? "**Mobile**" : "**Desktop**"}
+                        {" **userAgent=" + this.userAgent2() + "**"}
                             <img onClick={this.toogleWindow} alt="Zoom" src={this.state.gameWindowMode === "game-window-mode" ? imgZoomOut : imgZoonIn} style={{maxHeight:"1em",float:"right", paddingRight:"1em"}}/>
                     </p>
                 </div>

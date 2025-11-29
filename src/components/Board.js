@@ -46,7 +46,8 @@ export class Board extends React.Component {
                 </BoardSquare>
             </ div>
         );
-    }
+    }        
+
     isMobileDevice() {
         const userAgent = navigator.userAgent || navigator.vendor || window.opera;
         if (/android|ipad|iphone|ipod|blackberry|iemobile|opera mini/i.test(userAgent)) {

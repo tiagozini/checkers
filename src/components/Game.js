@@ -237,10 +237,9 @@ export class Game extends React.Component {
             <div className={`${baseClass} ${typeClass}`}>
                 <div className="game-presentation">
                     <p>Welcome to Checkers game! 
-                        <a onClick={this.toogleWindow} style={{float:"right", paddingRight:"1em"}}>
-                            <img src={this.state.gameWindowMode === "game-window-mode" ? imgZoomOut : imgZoonIn} style={{"max-height":"1.5em"}}/>
-                        </a></p>
-                       </div>
+                            <img onClick={this.toogleWindow} alt="Zoom" src={this.state.gameWindowMode === "game-window-mode" ? imgZoomOut : imgZoonIn} style={{maxHeight:"1em",float:"right", paddingRight:"1em"}}/>
+                    </p>
+                </div>
                 <div className="game-board">
                     <Board
                         isLastComputerPosition={this.isLastComputerPosition}

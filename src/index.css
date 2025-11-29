@@ -242,11 +242,10 @@ select {
   select { font-size: 0.7em; }    
 }
 
-/*
 @media (min-height: 1100px) and (orientation: landscape) {
   .game {
-    width: 600px;
-    height: 600px;
+    height: 80vh;
+      aspect-ratio: 1 / 1;
   }
 
   .game-info p {
@@ -260,8 +259,8 @@ select {
 
 @media (min-height: 1000px) and (max-height: 1099.99px) and (orientation: landscape) {
   .game {
-    width: 600px;
-    height: 600px;
+    height: 80vh;
+      aspect-ratio: 1 / 1;
   }
 
   .game-info p {
@@ -275,8 +274,8 @@ select {
 
 @media (min-height: 900px) and (max-height: 999.99px) and (orientation: landscape) {
   .game {
-    width: 600px;
-    height: 600px;
+    height: 80vh;
+      aspect-ratio: 1 / 1;
   }
 
   .game-info p {
@@ -290,8 +289,8 @@ select {
 
 @media (min-height: 800px) and (max-height: 899.99px) and (orientation: landscape) {
   .game {
-    width: 600px;
-    height: 600px;
+    height: 80vh;
+      aspect-ratio: 1 / 1;
   }
 
   .game-info p {
@@ -305,8 +304,8 @@ select {
 
 @media (min-height: 700px) and (max-height: 799.99px) and (orientation: landscape) {
   .game {
-    width: 600px;
-    height: 600px;
+    height: 80vh;
+      aspect-ratio: 1 / 1;
   }
 
   .game-info p {
@@ -320,8 +319,8 @@ select {
 
 @media (min-height: 650px) and (max-height: 699.99px) and (orientation: landscape) {
   .game {
-    width: 650px;
-    height: 650px;
+    height: 80vh;
+      aspect-ratio: 1 / 1;
   }
 
   .game-info p {
@@ -335,8 +334,8 @@ select {
 
 @media (min-height: 600px) and (max-height: 649.99px) and (orientation: landscape) {
   .game {
-    width: 600px;
-    height: 600px;
+    height: 80vh;
+      aspect-ratio: 1 / 1;
   }
 
   .game-info p {
@@ -350,8 +349,8 @@ select {
 
 @media (min-height: 550px) and (max-height: 599.99px) and (orientation: landscape) {
   .game {
-    width: 550px;
-    height: 550px;
+    height: 80vh;
+      aspect-ratio: 1 / 1;
   }
 
   .game-info p {
@@ -365,8 +364,8 @@ select {
 
 @media (min-height: 500px) and (max-height: 549.99px) and (orientation: landscape) {
   .game {
-    width: 500px;
-    height: 500px;
+    height: 80vh;
+      aspect-ratio: 1 / 1;
   }
 
   .game-info p {
@@ -380,8 +379,8 @@ select {
 
 @media (min-height: 450px) and (max-height: 499.99px) and (orientation: landscape) {
   .game {
-    width: 450px;
-    height: 450px;
+    height: 80vh;
+      aspect-ratio: 1 / 1;
   }
 
   .game-info p {
@@ -395,8 +394,8 @@ select {
 
 @media (min-height: 400px) and (max-height: 449.99px) and (orientation: landscape) {
   .game {
-    width: 400px;
-    height: 400px;
+    height: 80vh;
+      aspect-ratio: 1 / 1;
   }
 
   .game-info p {
@@ -410,8 +409,8 @@ select {
 
 @media (min-height: 350px) and (max-height: 399.99px) and (orientation: landscape) {
   .game {
-    width: 350px;
-    height: 350px;
+    height: 80vh;
+      aspect-ratio: 1 / 1;
   }
 
   .game-info p {
@@ -429,8 +428,8 @@ select {
 
 @media (min-height: 300px) and (max-height: 349.99px) and (orientation: landscape) {
   .game {
-    width: 300px;
-    height: 300px;
+    height: 80vh;
+      aspect-ratio: 1 / 1;
   }
 
   .game-info p {
@@ -449,8 +448,8 @@ select {
 
 @media (min-height: 250px) and (max-height: 299.99px) and (orientation: landscape) {
   .game {
-    width: 250px;
-    height: 250px;
+    height: 80vh;
+      aspect-ratio: 1 / 1;
   }
 
   .game-info p {
@@ -468,8 +467,8 @@ select {
 
 @media (min-height: 0px) and (max-height: 249.99px) and (orientation: landscape) {
   .game {
-    width: 200px;
-    height: 200px;
+    height: 80vh;
+      aspect-ratio: 1 / 1;
   }
 
   .game-info p {
@@ -484,9 +483,8 @@ select {
     font-size: 0.7em;
   }
 }
-  */
 
-
+/*
 @media (min-height: 0px) and (max-height: 1500px) and (orientation: landscape) {
   .game {
     height: 80vh;
@@ -502,6 +500,8 @@ select {
   }
 
   select {
+
     font-size: 0.7em;
   }
 }
+                */

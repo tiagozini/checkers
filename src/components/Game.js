@@ -11,7 +11,9 @@ import { TurnInfo } from '../models/TurnInfo';
 import imgZoomOut from '../img/zoom-out.png';
 import imgZoonIn from '../img/zoom-in.png';
 import { isMobile } from 'react-device-detect';
-import { FaSearchPlus, FaSearchMinus } from 'react-icons/fa';
+import { FaSearchPlus, FaSearchMinus, FaDesktop, FaMobileAlt, FaInfoCircle } from 'react-icons/fa';
+import imgPieceManWhite from '../img/piece-man-white.png';
+import imgPieceManBlack from '../img/piece-man-black.png';
 
 export class Game extends React.Component {
     computerDragTimer = null;
@@ -101,6 +103,10 @@ export class Game extends React.Component {
             lastComputerPosition = dropPosition;
         }
         this.turnInfo = new TurnInfo(!whiteIsNext, pieces, lastComputerPosition);
+    }
+
+    handleShowInfoDesktop() {
+        alert("If you are not in a desktop, you need to click on the three dots and uncheck the option \"Site for computer\" to make site behavior for mobile");
     }
 
     handleMovePiece = (dragPosition, dropPosition) => {
@@ -252,7 +258,7 @@ export class Game extends React.Component {
                 <div className="game-presentation">
                     <p>Welcome to Checkers game! 
                         <button onClick={this.toogleWindow} className='btn-link'  style={{maxHeight:"1em",float:"right", paddingRight:"1em"}}>
-                            {this.state.gameWindowMode === "game-window-mode" ? <FaSearchPlus/> : <FaSearchMinus/>}
+                            {this.state.gameWindowMode === "game-window-mode" ? <FaSearchMinus/> : <FaSearchPlus/>}
                         </button>
                     </p>
                 </div>
@@ -274,8 +280,8 @@ export class Game extends React.Component {
                 </div>
                 <div className="game-info clearfix">
                     <p>{status}</p>
-                    <p>Whites: {this.state.whitesCount}</p>
-                    <p>Blacks: {this.state.blacksCount}</p>
+                    <p><img src={imgPieceManWhite} className='small-piece' />{this.state.whitesCount} 
+                    <img src={imgPieceManBlack} className='small-piece' />{this.state.blacksCount}</p>
                     <p>Adversary:<br />
                         <select name="gameMode" id="gameMode"
                             disabled={this.state.running}
@@ -297,7 +303,11 @@ export class Game extends React.Component {
                             </select>
                         </p>
                         : null}
-                    <p>Plataforma: {isMobile ? "Mobile" : "Desktop"}</p>                    
+                    <p>{isMobile ? <FaMobileAlt/> : (
+                        <div><FaDesktop/> <button class="btn-link" onClick={this.handleShowInfoDesktop}><FaInfoCircle/></button>
+                        </div>)}</p>                    
+                    
+                    
                     <p><button onClick={this.restartOrResignGame}>{this.state.running ? "Resign" : "Start"}</button></p>
                 </div>
                 <div className="game-footer clearfix">

@@ -251,7 +251,7 @@ export class Game extends React.Component {
         if (winner) {
             status = <span><b><font color="red">Winner</font> <font style={{ backgroundColor: "yellow" }}></font>{winner}!</b></span>;
         } else {
-            status = <span>Turn player: <b>{this.state.whiteIsNext ? 'White' : 'Black'}</b></span>;
+            status = <span>Player <b><img src={this.state.whiteIsNext ? imgPieceManWhite : imgPieceManBlack} alt="Player turn" className='small-piece' /></b></span>;
         }
         return (
             <div className={`${baseClass} ${typeClass}`}>
@@ -280,6 +280,7 @@ export class Game extends React.Component {
                 </div>
                 <div className="game-info clearfix">
                     <p>{status}</p>
+                    <p><hr /></p>
                     <p><img src={imgPieceManWhite} className='small-piece' />{this.state.whitesCount} 
                     <img src={imgPieceManBlack} className='small-piece' />{this.state.blacksCount}</p>
                     <p>Adversary:<br />

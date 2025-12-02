@@ -160,6 +160,13 @@ body {
   outline: 1px solid green;
 }
 
+.game-window-mode .game-presentation .top-bar {
+  display: none;
+}
+
+.game-normal-mode .game-presentation .alternative-top-bar {
+  display: none;
+}
 button {
   padding:0.2em 0.4em;
   font-size:0.8em;

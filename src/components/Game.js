@@ -8,12 +8,12 @@ import {
     GameDefintions, GameMode, DraggableCapability, ComputerLevel
 } from '../Constants';
 import { TurnInfo } from '../models/TurnInfo';
-import imgZoomOut from '../img/zoom-out.png';
-import imgZoonIn from '../img/zoom-in.png';
 import { isMobile } from 'react-device-detect';
 import { FaSearchPlus, FaSearchMinus, FaDesktop, FaMobileAlt, FaInfoCircle } from 'react-icons/fa';
 import imgPieceManWhite from '../img/piece-man-white.png';
 import imgPieceManBlack from '../img/piece-man-black.png';
+import imgPieceKingWhite from '../img/piece-king-white.png';
+import imgPieceKingBlack from '../img/piece-king-black.png';
 
 export class Game extends React.Component {
     computerDragTimer = null;
@@ -42,10 +42,13 @@ export class Game extends React.Component {
             if (this.computerDragTimer) {
                 clearTimeout(this.computerDragTimer);
             }
+            let _gameWindowMode = this.state.gameWindowMode;
             let gameMode = document.getElementById("gameMode").value;
             let computerLevel = document.getElementById("computerLevel") ?
                 document.getElementById("computerLevel").value : null;
-            this.setState({...this.mountInitialState(gameMode, computerLevel),  running: true });
+            this.setState({...this.mountInitialState(gameMode, computerLevel),  
+                running: true,
+                gameWindowMode: _gameWindowMode });
             this.turnInfo = new TurnInfo(true, CheckersHelper.mountInitialPieces(), null);
         }
     }
@@ -253,14 +256,32 @@ export class Game extends React.Component {
         } else {
             status = <span>Player <b><img src={this.state.whiteIsNext ? imgPieceManWhite : imgPieceManBlack} alt="Player turn" className='small-piece' /></b></span>;
         }
+        const zoomButtonIcon = this.state.gameWindowMode === "game-window-mode" ? <FaSearchMinus/> : <FaSearchPlus/>;
         return (
             <div className={`${baseClass} ${typeClass}`}>
                 <div className="game-presentation">
-                    <p>Welcome to Checkers game! 
+                    <div className='top-bar'>Checkers game
                         <button onClick={this.toogleWindow} className='btn-link'  style={{maxHeight:"1em",float:"right", paddingRight:"1em"}}>
-                            {this.state.gameWindowMode === "game-window-mode" ? <FaSearchMinus/> : <FaSearchPlus/>}
+                            {zoomButtonIcon}
                         </button>
-                    </p>
+                    </div>
+                    <div className='alternative-top-bar'>
+                        <div style={{width:"25%",float:"left"}}>Checkers game</div>
+                        <div style={{width:"25%",float:"left"}}>
+                            {status}
+                        </div>                        
+                        <div style={{width:"25%",float:"left"}}>
+                          <img src={imgPieceKingWhite} className='small-piece' alt="White´s turn" />{this.state.whitesCount}
+                          <img src={imgPieceKingBlack} className='small-piece' alt="Black´s turn" />{this.state.blacksCount}                            
+                        </div>
+
+                        <div style={{width:"25%",float:"right"}}>  
+                            <button onClick={this.toogleWindow} className='btn-link'  style={{maxHeight:"1em",float:"right", paddingRight:"1em"}}>{zoomButtonIcon}</button> 
+                            <button onClick={this.restartOrResignGame} style={{float:"right", paddingRight:"1em"}}>{this.state.running ? "Resign" : "Start"}</button>                               
+                        </div>
+                    
+                    </div>
+
                 </div>
                 <div className="game-board">
                     <Board
@@ -280,9 +301,9 @@ export class Game extends React.Component {
                 </div>
                 <div className="game-info clearfix">
                     <p>{status}</p>
-                    <p><hr /></p>
-                    <p><img src={imgPieceManWhite} className='small-piece' />{this.state.whitesCount} 
-                    <img src={imgPieceManBlack} className='small-piece' />{this.state.blacksCount}</p>
+                    <hr />
+                    <p><img src={imgPieceKingWhite} className='small-piece' alt="White´s turn" />{this.state.whitesCount}<br/>
+                    <img src={imgPieceKingBlack} className='small-piece' alt="Black´s turn" />{this.state.blacksCount}</p>
                     <p>Adversary:<br />
                         <select name="gameMode" id="gameMode"
                             disabled={this.state.running}
@@ -305,7 +326,7 @@ export class Game extends React.Component {
                         </p>
                         : null}
                     <p>{isMobile ? <FaMobileAlt/> : (
-                        <div><FaDesktop/> <button class="btn-link" onClick={this.handleShowInfoDesktop}><FaInfoCircle/></button>
+                        <div><FaDesktop/> <button className="btn-link" onClick={this.handleShowInfoDesktop}><FaInfoCircle/></button>
                         </div>)}</p>                    
                     
                     

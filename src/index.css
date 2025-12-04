@@ -35,13 +35,13 @@ body {
   width: 100%;
   display: block;
   height: 10%; 
+  color: green;
 }
 
 .game-presentation p {
   padding-top: 0.25em;
   padding-bottom: 0.25em;
-  font-size: 1em;  
-  color: green;
+  font-size: 1em;
 }
 
 .game-footer {
@@ -167,6 +167,7 @@ body {
 .game-normal-mode .game-presentation .alternative-top-bar {
   display: none;
 }
+
 button {
   padding:0.2em 0.4em;
   font-size:0.8em;
@@ -187,7 +188,7 @@ button.btn-link {
   font-weight: bold;
   cursor: pointer;
   padding-bottom: 0.5em;
-    padding-top: 0.5em;
+  padding-top: 0.5em;
 }
 select {
   font-size: 1em;

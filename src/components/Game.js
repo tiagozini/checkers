@@ -260,13 +260,13 @@ export class Game extends React.Component {
         return (
             <div className={`${baseClass} ${typeClass}`}>
                 <div className="game-presentation">
-                    <div className='top-bar'>Checkers game
+                    <div className='top-bar'>Checkers
                         <button onClick={this.toogleWindow} className='btn-link'  style={{maxHeight:"1em",float:"right", paddingRight:"1em"}}>
                             {zoomButtonIcon}
                         </button>
                     </div>
                     <div className='alternative-top-bar'>
-                        <div style={{width:"25%",float:"left"}}>Checkers game</div>
+                        <div style={{width:"25%",float:"left"}}><span>Checkers</span></div>
                         <div style={{width:"25%",float:"left"}}>
                             {status}
                         </div>                        
@@ -274,10 +274,9 @@ export class Game extends React.Component {
                           <img src={imgPieceKingWhite} className='small-piece' alt="White´s turn" />{this.state.whitesCount}
                           <img src={imgPieceKingBlack} className='small-piece' alt="Black´s turn" />{this.state.blacksCount}                            
                         </div>
-
                         <div style={{width:"25%",float:"right"}}>  
-                            <button onClick={this.toogleWindow} className='btn-link'  style={{maxHeight:"1em",float:"right", paddingRight:"1em"}}>{zoomButtonIcon}</button> 
-                            <button onClick={this.restartOrResignGame} style={{float:"right", paddingRight:"1em"}}>{this.state.running ? "Resign" : "Start"}</button>                               
+                            <button onClick={this.toogleWindow} className='btn-link'  style={{maxHeight:"1em", paddingRight:"1em"}}>{zoomButtonIcon}</button> 
+                            <button onClick={this.restartOrResignGame} style={{paddingRight:"1em"}}>{this.state.running ? "Resign" : "Start"}</button>                               
                         </div>
                     
                     </div>

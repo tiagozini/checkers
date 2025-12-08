@@ -202,68 +202,68 @@ img.small-piece {
   height: 1.5em;
   vertical-align: bottom;
 }
-@media (min-width: 1100px) { 
+@media (min-width: 1100px) and (orientation: portrait) {
   .game {  width: 600px; height: 600px;}
   .game-info p { padding: 5px; }		  		  
   body {  font-size:26px; }}
 
-@media (min-width: 1000px) and (max-width: 1099.99px) { 
+@media (min-width: 1000px) and (max-width: 1099.99px) and (orientation: portrait) {
   .game {  width: 600px; height: 600px;}
   .game-info p { padding: 5px; }		  		  
   body {  font-size:26px; }
 }
 
-@media (min-width: 900px) and (max-width: 999.99px) { 
+@media (min-width: 900px) and (max-width: 999.99px) and (orientation: portrait) {
   .game {  width: 600px; height: 600px;}
   .game-info p { padding: 5px; }		  		  
   body {  font-size:26px; }
 }
 
-@media (min-width: 800px) and (max-width: 899.99px) { 
+@media (min-width: 800px) and (max-width: 899.99px) and (orientation: portrait) {
   .game {  width: 600px; height: 600px;}
   .game-info p { padding: 5px; }		  		  
   body {  font-size:26px; }
 }
 
-@media (min-width: 700px) and (max-width: 799.99px) { 
+@media (min-width: 700px) and (max-width: 799.99px) and (orientation: portrait) {
   .game {  width: 600px; height: 600px;}
   .game-info p { padding: 4px; }		  		  
   body {  font-size:26px; }
 }
 
-@media (min-width: 600px) and (max-width: 699.99px) { 
+@media (min-width: 600px) and (max-width: 699.99px) and (orientation: portrait) {
   .game {  width: 600px; height: 600px;}
   .game-info p { padding: 3px; }		  		  
   body {  font-size:22px; }
 }
 
-@media (min-width: 500px) and (max-width: 599.99px) { 
+@media (min-width: 500px) and (max-width: 599.99px) and (orientation: portrait) {
   .game {  width: 500px; height: 500px;}
   .game-info p { padding: 3x; }		  		  
   body {  font-size:18px; }
 }
 
-@media (min-width: 400px) and (max-width: 499.99px) { 
+@media (min-width: 400px) and (max-width: 499.99px) and (orientation: portrait) {
   .game {  width: 400px; height: 400px;}
   .game-info p { padding: 3px; }		  		  
   body {  font-size:14px; }
 }
 
-@media (min-width: 300px) and (max-width: 399.99px) { 
+@media (min-width: 300px) and (max-width: 399.99px) and (orientation: portrait) {
   .game {  width: 300px; height: 300px;}
   .game-info p { padding: 3px; }		  		  
   body {  font-size:14px; }
   select { font-size: 0.7em; }    
 }
 
-@media (min-width: 250px) and (max-width: 299.99px) { 
+@media (min-width: 250px) and (max-width: 299.99px) and (orientation: portrait) {
   .game {  width: 250px; height: 250px;}
   .game-info p { padding: 3px; }		  		  
   body {  font-size:10px; }
   select { font-size: 0.7em; }    
 }
 
-@media (min-width: 0px) and (max-width: 249.99px) { 
+@media (min-width: 0px) and (max-width: 249.99px) and (orientation: portrait) {
   .game {  width: 200px; height: 200px;}
   .game-info p { padding: 3px; }		  		  
   body {  font-size:10px; }

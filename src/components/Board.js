@@ -66,7 +66,7 @@ export class Board extends React.Component {
             <DndProvider backend={backend} options={backendOptions}>
                 {Array.from(Array(this.props.numRowsByLine).keys()).map((lineNumber) =>
                     Array.from(Array(this.props.numRowsByLine).keys()).map((rowNumber) =>
-                        this.renderSquare(GameDefintions.NUM_ROWS - 1 - ((lineNumber) * this.props.numRowsByLine + rowNumber))
+                        this.renderSquare(GameDefintions.NUM_ROWS - 1 - (lineNumber * this.props.numRowsByLine + rowNumber))
                     )
                 )}
             </DndProvider>

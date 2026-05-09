@@ -21,6 +21,13 @@ export default class CheckersHelper {
         return [position % GameDefintions.NUM_ROWS_BY_LINE, Math.trunc(position / GameDefintions.NUM_ROWS_BY_LINE)];
     }
 
+    static getXY(position) {
+        return "" + 
+            (position % GameDefintions.NUM_ROWS_BY_LINE) + 
+            (
+                Math.trunc(position / GameDefintions.NUM_ROWS_BY_LINE));
+    }
+
     static getY(position) {
         return Math.trunc(position / GameDefintions.NUM_ROWS_BY_LINE);
     }
@@ -65,7 +72,7 @@ export default class CheckersHelper {
         }
         let ppmList = [];
         if (upperMoves.length === 0 && moves.length > 0) {
-            ppmList.push(new PiecePossibleMoves(moves, piecesCaptured));
+            ppmList.push(new PiecePossibleMoves(positionedPiece.position, moves, piecesCaptured));
         } else {
             for (let moveItens of upperMoves) {
                 for (let miniMove of moveItens) {
@@ -92,7 +99,7 @@ export default class CheckersHelper {
                 }
             }
         }
-        return positions.map((p) => new PiecePossibleMoves([p], []));
+        return positions.map((p) => new PiecePossibleMoves(position, [p], []));
     }
 
     static getDiagonalOperations(diagonalType) {
@@ -162,7 +169,7 @@ export default class CheckersHelper {
         }
         let arr = [];
         if (upperMoves.length === 0 && moves.length > 0) {
-            arr.push(new PiecePossibleMoves(moves, piecesCaptured));
+            arr.push(new PiecePossibleMoves(positionedPiece.position, moves, piecesCaptured));
         } else {
             for (let moveItens of upperMoves) {
                 for (let miniMove of moveItens) {
@@ -173,12 +180,27 @@ export default class CheckersHelper {
         return arr;
     }
 
+    /**
+     * FIXME - Entender essa logica
+     * @param {*} position1 
+     * @param {*} position2 
+     * @param {*} opositeColor 
+     * @param {*} pieces 
+     * @returns 
+     */
     static canCapture(position1, position2, opositeColor, pieces) {
         return pieces[position1] != null
             && pieces[position2] === null
             && pieces[position1].color === opositeColor;
     }
 
+    /**
+     * Valida se existe captura possivel a partir de uma peça especifica.
+     * FIXME - Entender essa logica
+     * @param {*} positionedPiece 
+     * @param {*} pieces 
+     * @returns 
+     */
     static canManCaptures(positionedPiece, pieces) {
         const [x, y] = this.getXAndY(positionedPiece.position);
         for (let diagonalType of this.DIAGONAL_TYPES_LIST) {
@@ -205,9 +227,17 @@ export default class CheckersHelper {
         return null;
     }
 
+    /**
+     * Retorna os movimentos possiveis a partir de uma peca posicionada e as pecas que seriam capturadas nesses movimentos.
+     * 
+     * @param {*} positionedPiece 
+     * @param {*} pieces 
+     * @returns 
+     */
     static getManMoves(positionedPiece, pieces) {
         let ppmList = [];
         const [x, y] = this.getXAndY(positionedPiece.position);
+        // movimentos de captura
         if (this.canManCaptures(positionedPiece, pieces)) {
             let piecePossibleMoves = this.getManCaptureMoves(positionedPiece, [], [], pieces);
             const maxSize = piecePossibleMoves.reduce(
@@ -215,13 +245,15 @@ export default class CheckersHelper {
                     (prev.moves.length > curr.moves.length) ? prev : curr
             ).moves.length;
             return piecePossibleMoves.filter((pos) => pos.moves.length === maxSize);
+            // movimentos normais
         } else {
             let yOperation = this.getManYOperation(positionedPiece);
+            // valida a esquerda e a direita para cima ou para baixo, dependendo do tipo de peca
             for (let xPart of [x - 1, x + 1]) {
                 const lastPosition = this.getPosition(xPart, y + yOperation);
-                if (xPart >= 0 && xPart <= 7 && yOperation != null &&
-                    pieces[lastPosition] === null) {
-                    ppmList.push(new PiecePossibleMoves([lastPosition], []));
+                // ve se movimento excede os limites laterais e se o destino nao tem uma peca nele
+                if (xPart >= 0 && xPart <= 7 && yOperation != null && pieces[lastPosition] === null) {
+                    ppmList.push(new PiecePossibleMoves(positionedPiece.position, [lastPosition], []));
                 }
             }
         }
@@ -295,6 +327,14 @@ export default class CheckersHelper {
         return possibleMoves;
     }
 
+    /**
+     * Cria uma lista com uma entrada para cada peca ocupada por um objeto null ou uma lista de possiveis movimentos.
+     * Entradas de movimentos validos sao transformadas em null ou conjunto vazio se nao tiverem o numero maximo da capturas possiveis
+     * no caso de existirem capturas.
+     * @param {*} pieces 
+     * @param {*} whiteIsNext 
+     * @returns 
+     */
     static getPossibleMoves(pieces, whiteIsNext) {
         let possibleMoves = [];
         let maxCapturedPiecesPossible = 0;
@@ -302,8 +342,7 @@ export default class CheckersHelper {
             const piece = pieces[position];
             if (piece != null && this.isThePieceTurn(piece, whiteIsNext)) {
                 let positionedPiece = new PositionedPiece(piece.color, piece.type, position);
-                possibleMoves.push(
-                    (positionedPiece.type === PieceTypes.MAN) ?
+                possibleMoves.push(positionedPiece.type === PieceTypes.MAN ?
                         CheckersHelper.getManMoves(positionedPiece, pieces) :
                         CheckersHelper.getKingMoves(positionedPiece, pieces)
                 );
@@ -314,14 +353,12 @@ export default class CheckersHelper {
         for (let position = 0; position < GameDefintions.NUM_ROWS; position++) {
             if (possibleMoves[position] != null) {
                 for (let ppm of possibleMoves[position]) {
-                    maxCapturedPiecesPossible = Math.max(maxCapturedPiecesPossible,
-                        ppm.piecesCaptured.length);
+                    maxCapturedPiecesPossible = Math.max(maxCapturedPiecesPossible, ppm.piecesCaptured.length);
                 }
             }
         }
         if (maxCapturedPiecesPossible > 0) {
-            possibleMoves = this.filterMovesWithMaxCapturedPieces(maxCapturedPiecesPossible,
-                possibleMoves, pieces);
+            possibleMoves = this.filterMovesWithMaxCapturedPieces(maxCapturedPiecesPossible, possibleMoves, pieces);
         }
         return possibleMoves;
     }
@@ -377,11 +414,45 @@ export default class CheckersHelper {
         return false;
     }
 
-    static getPieces(pieces, positions) {
+    static getPiecesSubList(pieces, positions) {
         let piecesSubList = [];
         for (let position of positions) {
             piecesSubList.push(pieces[position]);
         }
         return piecesSubList;
+    }
+    
+    static traceBkSubTotais(traceBack) {
+        let parts = traceBack.split(/\s[+-]\s/);    
+        let subtotais = [];
+        for (let i =0; i < parts.length; i++) {
+            let subtotal = 0;
+            for (let j=i; j < parts.length; j++) {
+                subtotal = subtotal + (parts[j] * ((j-i) % 2 === 0 ? 1 : -1));
+            }
+            subtotais.push(subtotal);
+        }
+        return subtotais;
+    }
+
+    static sortBySubTotais(outputs) {
+        return outputs.sort(function(a, b) {
+            let aTotais = a["traceBkSubTotais"];
+            let bTotais = b["traceBkSubTotais"];
+            if (aTotais[0] !== bTotais[0])
+                return aTotais[0] < bTotais[0] ? 1 : -1;
+            if (aTotais[1] !== bTotais[1])
+                return aTotais[1] < bTotais[1] ? 1 : -1;  
+            if (aTotais[2] !== bTotais[2])
+                return aTotais[2] < bTotais[2] ? 1 : -1;
+            if (aTotais[3] !== bTotais[3])
+                return aTotais[3] < bTotais[3] ? 1 : -1;
+            if (aTotais[4] !== bTotais[4])
+                return aTotais[4] < bTotais[4] ? 1 : -1;                                                                   
+            if (aTotais[5] !== bTotais[5])
+                return aTotais[5] < bTotais[5] ? 1 : -1;              
+            return 0;                       
+        });
+
     }
 }

@@ -184,9 +184,7 @@ export class Game extends React.Component {
             checkLevel = 3;
         }
         let deep = checkLevel * 2;
-        const [position, ppm] = CheckersMinMax.negamax(
-            this.state.pieces.slice(), this.state.whiteIsNext,
-            deep, deep);
+        const [position, ppm, maxPoints] = CheckersMinMax.negamax(this.state.pieces.slice(), this.state.whiteIsNext, deep, deep);
         this.turnInfo.registerComputerPlay(ppm);
         this.doComputerDrag(position, ppm);
     }
@@ -266,19 +264,18 @@ export class Game extends React.Component {
                         </button>
                     </div>
                     <div className='alternative-top-bar'>
-                        <div style={{width:"25%",float:"left"}}><span>Checkers</span></div>
-                        <div style={{width:"25%",float:"left"}}>
+                        <div style={{width:"25%"}}>Checkers</div>
+                        <div style={{width:"25%", fontSize:"0.8em"}}>
                             {status}
                         </div>                        
-                        <div style={{width:"25%",float:"left"}}>
-                          <img src={imgPieceKingWhite} className='small-piece' alt="White´s turn" />{this.state.whitesCount}
-                          <img src={imgPieceKingBlack} className='small-piece' alt="Black´s turn" />{this.state.blacksCount}                            
+                        <div style={{width:"20%", fontSize:"0.8em"}}>
+                          {this.state.whitesCount}<img src={imgPieceKingWhite} className='small-piece' alt="White´s turn" />
+                          {this.state.blacksCount}<img src={imgPieceKingBlack} className='small-piece' alt="Black´s turn" />                            
                         </div>
-                        <div style={{width:"25%",float:"right"}}>  
-                            <button onClick={this.toogleWindow} className='btn-link'  style={{maxHeight:"1em", paddingRight:"1em"}}>{zoomButtonIcon}</button> 
-                            <button onClick={this.restartOrResignGame} style={{paddingRight:"1em"}}>{this.state.running ? "Resign" : "Start"}</button>                               
-                        </div>
-                    
+                        <div style={{width:"30%"}}>  
+                            <button onClick={this.toogleWindow} className='btn-link'  style={{paddingRight:"1em"}}>{zoomButtonIcon}</button> 
+                            <button onClick={this.restartOrResignGame}>{this.state.running ? "Resign" : "Start"}</button>                               
+                        </div>                    
                     </div>
 
                 </div>
@@ -303,9 +300,10 @@ export class Game extends React.Component {
                     <hr />
                     <p><img src={imgPieceKingWhite} className='small-piece' alt="White´s turn" />{this.state.whitesCount}<br/>
                     <img src={imgPieceKingBlack} className='small-piece' alt="Black´s turn" />{this.state.blacksCount}</p>
-                    <p>Adversary:<br />
+                    <p>Adversary<br />
                         <select name="gameMode" id="gameMode"
                             disabled={this.state.running}
+							className='custom-select2'
                             value={this.state.gameMode}
                             onChange={this.handleGameModeChange}>
                             <option value={GameMode.ALONE}>Yourself</option>
@@ -313,9 +311,10 @@ export class Game extends React.Component {
                         </select>
                     </p>
                     {this.state.gameMode === GameMode.AGAINST_COMPUTER ?
-                        <p>Level:<br />
+                        <p >Level<br />
                             <select name="computerLevel" id="computerLevel"
                                 disabled={this.state.running}
+								className='custom-select2'
                                 value={this.state.computerLevel}
                                 onChange={this.handleComputerLevelChange}>
                                 <option value={ComputerLevel.DUMMY}>Dummy</option>

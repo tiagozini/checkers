@@ -1,3 +1,5 @@
+@import-normalize;
+/* bring in normalize.css styles */
 * {
   margin: 0;
   padding: 0;
@@ -24,8 +26,7 @@ body {
   text-align: center;
 }
 
-.game {  
-  width: 400;
+.game {
   height: 400px; 
   margin: 0 auto;
   position:relative;
@@ -70,6 +71,7 @@ body {
   height: 80%;
   width:20%;
   font-family: arial,helvetica, sans-serif;
+  
 }
 
 .game-info p {
@@ -82,6 +84,12 @@ body {
   outline: 1px outset green;
 }
 
+.game-info {
+  padding-top: 0.10em;
+  padding-bottom: 0.10em;
+  font-size: 1em;
+  color: green;
+}
 .game-board {
   position:relative;
   width:80%;
@@ -168,8 +176,17 @@ body {
   display: none;
 }
 
+.alternative-top-bar {
+  display: flex;
+  flex-direction: row;
+  /* alinha na vertical */
+  gap: 0px;
+  /* espaço entre os itens */
+  align-items: center;
+  /* ou center, se quiser centralizar */
+}
 button {
-  padding:0.2em 0.4em;
+  padding: 0.2em 0.3em;
   font-size:0.8em;
   border-radius: 40%;
   background-color: green;
@@ -191,62 +208,95 @@ button.btn-link {
   padding-top: 0.5em;
 }
 select {
-  font-size: 1em;
-  border-style: solid;
+  font-size: 0.6em;
+    border-style: revert;
 }
 
 /**
 * Game - Component
 **/
 img.small-piece {
-  height: 1.5em;
+  height: 1.4em;
   vertical-align: bottom;
 }
 @media (min-width: 1100px) and (orientation: portrait) {
-  .game {  width: 600px; height: 600px;}
+  .game {
+      width: 1100px;
+      height: 1100px;
+    }
   .game-info p { padding: 5px; }		  		  
   body {  font-size:26px; }}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                select {
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  font-size: 0.7em;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                }
 
 @media (min-width: 1000px) and (max-width: 1099.99px) and (orientation: portrait) {
-  .game {  width: 600px; height: 600px;}
+  .game {
+      width: 1000px;
+      height: 1000px;
+    }
   .game-info p { padding: 5px; }		  		  
   body {  font-size:26px; }
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                select {
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  font-size: 0.7em;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                }
 }
 
 @media (min-width: 900px) and (max-width: 999.99px) and (orientation: portrait) {
-  .game {  width: 600px; height: 600px;}
+  .game {
+      width: 900px;
+      height: 900px;
+    }
   .game-info p { padding: 5px; }		  		  
   body {  font-size:26px; }
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                select {
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  font-size: 0.7em;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                }
 }
 
 @media (min-width: 800px) and (max-width: 899.99px) and (orientation: portrait) {
   .game {  width: 600px; height: 600px;}
   .game-info p { padding: 5px; }		  		  
   body {  font-size:26px; }
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                select {
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  font-size: 0.7em;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                }
 }
 
 @media (min-width: 700px) and (max-width: 799.99px) and (orientation: portrait) {
   .game {  width: 600px; height: 600px;}
   .game-info p { padding: 4px; }		  		  
   body {  font-size:26px; }
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                select {
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  font-size: 0.7em;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                }
 }
 
 @media (min-width: 600px) and (max-width: 699.99px) and (orientation: portrait) {
   .game {  width: 600px; height: 600px;}
   .game-info p { padding: 3px; }		  		  
   body {  font-size:22px; }
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                select {
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  font-size: 0.7em;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                }
 }
 
 @media (min-width: 500px) and (max-width: 599.99px) and (orientation: portrait) {
   .game {  width: 500px; height: 500px;}
   .game-info p { padding: 3x; }		  		  
   body {  font-size:18px; }
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                select {
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  font-size: 0.7em;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                }
 }
 
 @media (min-width: 400px) and (max-width: 499.99px) and (orientation: portrait) {
   .game {  width: 400px; height: 400px;}
   .game-info p { padding: 3px; }		  		  
   body {  font-size:14px; }
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                select {
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  font-size: 0.7em;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                }
 }
 
 @media (min-width: 300px) and (max-width: 399.99px) and (orientation: portrait) {
@@ -272,7 +322,7 @@ img.small-piece {
 
 @media (min-height: 1100px) and (orientation: landscape) {
   .game {
-    height: 80vh;
+    height: 95vh;
     aspect-ratio: 1 / 1;
   }
 
@@ -281,13 +331,17 @@ img.small-piece {
   }
 
   body {
-    font-size: 26px;
-  }
+    font-size: 4vh;
+    }
+    
+    select {
+      font-size: 0.7em;
+    }
 }
 
 @media (min-height: 1000px) and (max-height: 1099.99px) and (orientation: landscape) {
   .game {
-    height: 80vh;
+    height: 950px;
     aspect-ratio: 1 / 1;
   }
 
@@ -296,13 +350,17 @@ img.small-piece {
   }
 
   body {
-    font-size: 26px;
-  }
+    font-size: 4vh;
+    }
+    
+    select {
+      font-size: 0.7em;
+    }
 }
 
 @media (min-height: 900px) and (max-height: 999.99px) and (orientation: landscape) {
   .game {
-    height: 80vh;
+    height: 850px;
     aspect-ratio: 1 / 1;
   }
 
@@ -311,13 +369,17 @@ img.small-piece {
   }
 
   body {
-    font-size: 26px;
-  }
+    font-size: 4vh;
+    }
+    
+    select {
+      font-size: 0.7em;
+    }
 }
 
 @media (min-height: 800px) and (max-height: 899.99px) and (orientation: landscape) {
   .game {
-    height: 80vh;
+    height: 750px;
     aspect-ratio: 1 / 1;
   }
 
@@ -326,13 +388,17 @@ img.small-piece {
   }
 
   body {
-    font-size: 26px;
-  }
+    font-size: 4vh;
+    }
+    
+    select {
+      font-size: 0.7em;
+    }
 }
 
 @media (min-height: 700px) and (max-height: 799.99px) and (orientation: landscape) {
   .game {
-    height: 80vh;
+    height: 650px;
     aspect-ratio: 1 / 1;
   }
 
@@ -341,13 +407,17 @@ img.small-piece {
   }
 
   body {
-    font-size: 26px;
-  }
+    font-size: 4vh;
+    }
+    
+    select {
+      font-size: 0.7em;
+    }
 }
 
 @media (min-height: 650px) and (max-height: 699.99px) and (orientation: landscape) {
   .game {
-    height: 80vh;
+    height: 600;
     aspect-ratio: 1 / 1;
   }
 
@@ -358,11 +428,14 @@ img.small-piece {
   body {
     font-size: 22px;
   }
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                select {
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  font-size: 0.7em;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                }
 }
 
 @media (min-height: 600px) and (max-height: 649.99px) and (orientation: landscape) {
   .game {
-    height: 80vh;
+    height: 550px;
     aspect-ratio: 1 / 1;
   }
 
@@ -373,11 +446,14 @@ img.small-piece {
   body {
     font-size: 22px;
   }
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                select {
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  font-size: 0.7em;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                }
 }
 
 @media (min-height: 550px) and (max-height: 599.99px) and (orientation: landscape) {
   .game {
-    height: 80vh;
+    height: 500px;
     aspect-ratio: 1 / 1;
   }
 
@@ -388,11 +464,14 @@ img.small-piece {
   body {
     font-size: 18px;
   }
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                select {
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  font-size: 0.7em;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                }
 }
 
 @media (min-height: 500px) and (max-height: 549.99px) and (orientation: landscape) {
   .game {
-    height: 80vh;
+    height: 450px;
     aspect-ratio: 1 / 1;
   }
 
@@ -403,11 +482,14 @@ img.small-piece {
   body {
     font-size: 18px;
   }
+select {
+  font-size: 0.7em;
+}
 }
 
 @media (min-height: 450px) and (max-height: 499.99px) and (orientation: landscape) {
   .game {
-    height: 80vh;
+    height: 400px;
     aspect-ratio: 1 / 1;
   }
 
@@ -418,11 +500,14 @@ img.small-piece {
   body {
     font-size: 14px;
   }
+select {
+  font-size: 0.7em;
+}
 }
 
 @media (min-height: 400px) and (max-height: 449.99px) and (orientation: landscape) {
   .game {
-    height: 80vh;
+    height: 350px;
     aspect-ratio: 1 / 1;
   }
 
@@ -433,11 +518,14 @@ img.small-piece {
   body {
     font-size: 14px;
   }
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                select {
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  font-size: 0.7em;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                }
 }
 
 @media (min-height: 350px) and (max-height: 399.99px) and (orientation: landscape) {
   .game {
-    height: 80vh;
+    height: 300px;
     aspect-ratio: 1 / 1;
   }
 
@@ -456,7 +544,7 @@ img.small-piece {
 
 @media (min-height: 300px) and (max-height: 349.99px) and (orientation: landscape) {
   .game {
-    height: 80vh;
+    height: 250px;
     aspect-ratio: 1 / 1;
   }
 
@@ -465,7 +553,7 @@ img.small-piece {
   }
 
   body {
-    font-size: 14px;
+    font-size: 12px;
   }
 
   select {
@@ -476,7 +564,7 @@ img.small-piece {
 
 @media (min-height: 250px) and (max-height: 299.99px) and (orientation: landscape) {
   .game {
-    height: 80vh;
+    height: 200px;
     aspect-ratio: 1 / 1;
   }
 
@@ -495,7 +583,7 @@ img.small-piece {
 
 @media (min-height: 0px) and (max-height: 249.99px) and (orientation: landscape) {
   .game {
-    height: 80vh;
+    height: 200px;
     aspect-ratio: 1 / 1;
   }
 
@@ -512,24 +600,11 @@ img.small-piece {
   }
 }
 
-/*
-@media (min-height: 0px) and (max-height: 1500px) and (orientation: landscape) {
-  .game {
-    height: 80vh;
-    aspect-ratio: 1 / 1;
-  }
-
-  .game-info p {
-    padding: 3px;
-  }
-
-  body {
-    font-size: 14px;
-  }
-
-  select {
-
-    font-size: 0.7em;
-  }
+select.custom-select2 {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%228%22%20height%3D%228%22%20viewBox%3D%220%200%208%208%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M1%202.5L4%205.5L7%202.5%22%20stroke%3D%22black%22%20stroke-width%3D%221.5%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E');
+  background-repeat: no-repeat;
+  background-position: right 3px center;
+  padding-right: 12px;
 }
-                */

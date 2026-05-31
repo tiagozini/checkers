@@ -12,6 +12,7 @@ export default function Piece(props) {
   const color = props.color;
   const draggable = props.canDrag;
   const didComputerLastMove = props.didComputerLastMove;
+  const didPlayerLastMove = props.didPlayerLastMove;
 
   let url = null;
 
@@ -33,7 +34,7 @@ export default function Piece(props) {
       cursor: 'move'
     };
     if (draggable === DraggableCapability.PLAYER_CAN) {
-      style.backgroundColor = "pink";
+      style.backgroundColor = "#FFB6C1";
     }
     if (draggable === DraggableCapability.COMPUTER_CAN) {
       style.backgroundColor = "lightGreen";
@@ -41,7 +42,9 @@ export default function Piece(props) {
     if (didComputerLastMove) {
       style.backgroundColor = "green";
     }
-
+    if (didPlayerLastMove) {
+      style.backgroundColor = "#FF69B4";
+    }
     return style;
   };
 
@@ -50,9 +53,5 @@ export default function Piece(props) {
   } else if (PieceTypes.KING === type) {
     url = (color === ColorTypes.WHITE ? imgPieceKingWhite : imgPieceKingBlack);
   }
-  return <img
-    className="piece"
-    ref={drag} alt=""
-    style={getStyle(drag)}
-    src={url} />
+  return <img className="piece" ref={drag} alt="" style={getStyle(drag)} src={url} />
 }

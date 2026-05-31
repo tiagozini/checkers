@@ -3,12 +3,16 @@ import CheckersHelper from "./CheckersHelper";
 export class PiecePossibleMoves {
     moves = [];
     piecesCaptured = [];
+    originalPosition = null;
+    piecesCapturedTypes = [];
+    originalType = null;
 
-
-    constructor(originalPosition, moves, piecesCaptured) {
+    constructor(originalPosition, moves, piecesCaptured, piecesCapturedTypes, originalType) {
         this.originalPosition = originalPosition;
         this.moves = moves;
         this.piecesCaptured = piecesCaptured;
+        this.piecesCapturedTypes = piecesCapturedTypes;
+        this.originalType = originalType;
     }
 
     formatMovement() {
@@ -20,5 +24,9 @@ export class PiecePossibleMoves {
 
     getLastMovePosition() {
         return this.moves ? this.moves[this.moves.length-1] : null;
+    }
+
+    getPiecesCapturedPosition() {
+        return this.piecesCaptured;
     }
 }

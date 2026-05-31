@@ -11,7 +11,7 @@ import { GameDefintions } from '../Constants';
 
 
 export class Board extends React.Component {
-    constructor(props) {
+    constructor(props)  {
         super(props);
         this.possibleMoves = [];
         for (let i = 0; i < props.numRows; i++) {
@@ -21,11 +21,13 @@ export class Board extends React.Component {
         this.handleCanDropPiece = props.handleCanDropPiece.bind(this);
         this.handleCanDragPiece = props.handleCanDragPiece.bind(this);
         this.isLastComputerPosition = props.isLastComputerPosition.bind(this);
+        this.isLastPlayerPosition = props.isLastPlayerPosition.bind(this);
     }
 
     renderSquare(position) {
         const piece = this.props.pieces[position];
         const didComputerLastMove = this.isLastComputerPosition(position);
+        const didPlayerLastMove = this.isLastPlayerPosition(position);
         return (
             <div key={"" + position + "-" + this.props.count + "-" + this.props.whiteIsNext}
                 className="game-board-square" id={"game-board-square-" + position} >
@@ -38,6 +40,7 @@ export class Board extends React.Component {
                     piece={piece} >
                     {piece != null && <Piece color={piece.color}
                         didComputerLastMove={didComputerLastMove}
+                        didPlayerLastMove={didPlayerLastMove}
                         type={piece.type}
                         position={position}
                         canDrag={this.handleCanDragPiece(new PositionedPiece(piece.color, piece.type,

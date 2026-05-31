@@ -12,9 +12,10 @@ export class TurnInfo {
     originalPosition = null;
     piecesPossibleMoves = [];
     lastComputerPosition = null;
+    lastPlayerPosition = null;
     computerPlayerChoice = null;
 
-    constructor(whiteIsNext, pieces, lastComputerPosition) {
+    constructor(whiteIsNext, pieces, lastComputerPosition, lastPlayerPosition) {
         this.currentStep = 1;
         this.movesChosen = [];
         this.capturedPiecePositions = [];
@@ -23,6 +24,8 @@ export class TurnInfo {
         this.piecesPossibleMoves = CheckersHelper.getPossibleMoves(pieces.slice(), whiteIsNext);
         this.numPossibleSteps = this.getNumPossibleMoves(this.piecesPossibleMoves);
         this.lastComputerPosition = lastComputerPosition;
+        this.lastPlayerPosition = lastPlayerPosition;
+        this.originalPosition = null;
     }
 
     registerComputerPlay(piecePossibleMoves) {
@@ -46,6 +49,7 @@ export class TurnInfo {
     updateOriginalPosition(dragPiecePositioned) {
         if (this.currentStep === 1) {
             this.originalPosition = dragPiecePositioned.position;
+            console.log("this.originalPosition:" + this.originalPosition);
         }
     }
 
@@ -66,9 +70,9 @@ export class TurnInfo {
     }
 
     retriveLastCapturePosition() {
-        for (let position = 0; position < GameDefintions.NUM_ROWS; position++) {
-            if (this.piecesPossibleMoves[position]) {
-                for (let ppm of this.piecesPossibleMoves[position]) {
+        //for (let position = 0; position < GameDefintions.NUM_ROWS; position++) {
+            if (this.piecesPossibleMoves[this.originalPosition]) {
+                for (let ppm of this.piecesPossibleMoves[this.originalPosition]) {
                     let found = true;
                     for (let i = 0; i < this.currentStep; i++) {
                         if (ppm.moves[i] !== this.movesChosen[i]) {
@@ -80,12 +84,16 @@ export class TurnInfo {
                     }
                 }
             }
-        }
+        //}
         return null;
     }
 
-    storeMove(dropPosition) {
+    storeMove(dragPosition, dropPosition) {
         this.movesChosen.push(dropPosition);
+        if (this.movesChosen.length === 1) {
+            this.originalPosition = dragPosition;
+            //console.log("originalPosition: " + this.originalPosition);
+        }
         this.finished = (this.numPossibleSteps === this.currentStep);
         this.reducePiecesPossibleMoves();
         let lastCapturedPiece = this.retriveLastCapturePosition();

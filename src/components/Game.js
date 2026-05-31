@@ -3,6 +3,11 @@ import CheckersHelper from '../models/CheckersHelper';
 import CheckersMinMax from '../models/CheckersMinMax';
 import { Board } from './Board';
 import Overlay from './Overlay';
+import FileRead from './FileRead';
+import ReplayBar from './ReplayButtonsBar';
+import FileDownload from './FileDownload';
+import { GameRecord } from '../models/GameRecord';
+import { GameReplay } from '../models/GameReplay';
 import {
     PieceTypes, PossibleMoveType, PlayerNames,
     GameDefintions, GameMode, DraggableCapability, ComputerLevel
@@ -20,8 +25,7 @@ export class Game extends React.Component {
 
     constructor(props) {
         super(props);
-        let state = this.mountInitialState(GameMode.AGAINST_COMPUTER,
-            ComputerLevel.DUMMY);
+        let state = this.mountInitialState(GameMode.AGAINST_COMPUTER, ComputerLevel.DUMMY);
         this.state = state;
         this.turnInfo = new TurnInfo(true, state.pieces, null);
         this.handleMovePiece = this.handleMovePiece.bind(this);
@@ -33,11 +37,15 @@ export class Game extends React.Component {
         this.doComputerPlay = this.doComputerPlay.bind(this);
         this.isLastComputerPosition = this.isLastComputerPosition.bind(this);
         this.toogleWindow = this.toogleWindow.bind(this);
+        this.isLastPlayerPosition = this.isLastPlayerPosition.bind(this);
+        this.handleLoadGamePlayed = this.handleLoadGamePlayed.bind(this);
+        this.handleReplayBarBtClick = this.handleReplayBarBtClick.bind(this);
+        this.mountDownloadFileContent = this.mountDownloadFileContent.bind(this);
     }
 
     restartOrResignGame() {
         if (this.state.running) {
-           this.setState({...this.state, running: false});
+           this.setState({...this.state, running: false, gameLoaded: false});
         } else {
             if (this.computerDragTimer) {
                 clearTimeout(this.computerDragTimer);
@@ -48,6 +56,7 @@ export class Game extends React.Component {
                 document.getElementById("computerLevel").value : null;
             this.setState({...this.mountInitialState(gameMode, computerLevel),  
                 running: true,
+                gameLoaded: false,
                 gameWindowMode: _gameWindowMode });
             this.turnInfo = new TurnInfo(true, CheckersHelper.mountInitialPieces(), null);
         }
@@ -84,11 +93,16 @@ export class Game extends React.Component {
             gameMode: gameMode,
             computerLevel: computerLevel,
             running: false,
-            gameWindowMode : "game-normal-mode"
+            gameWindowMode : "game-normal-mode",
+            gameLoaded : false,
+            movements : []
         }
     }
 
     handleCanDropPiece(positionedPiece, dropPosition) {
+        if (this.gameReplay) {
+            return PossibleMoveType.NO_MOVE;
+        }
         this.turnInfo.updateOriginalPosition(positionedPiece);
         return CheckersHelper.canDoMove(this.turnInfo, dropPosition) ?
             PossibleMoveType.LAST_MOVE : PossibleMoveType.NO_MOVE;
@@ -96,20 +110,44 @@ export class Game extends React.Component {
 
     handleTurnEnd(pieces, whiteIsNext, gameMode, dropPosition) {
         for (let p of this.turnInfo.capturedPiecePositions) {
+            console.log("capturedPiecePositions -> " + p);
             pieces[p] = null;
         }
         if (CheckersHelper.canPutTheCrown(pieces[dropPosition], dropPosition)) {
             pieces[dropPosition].type = PieceTypes.KING;
         }
         let lastComputerPosition = null;
-        if (!whiteIsNext && gameMode === GameMode.AGAINST_COMPUTER) {
+        if (!whiteIsNext) {
             lastComputerPosition = dropPosition;
         }
-        this.turnInfo = new TurnInfo(!whiteIsNext, pieces, lastComputerPosition);
+        let lastPlayerPosition = null;
+        if (whiteIsNext) {
+            lastPlayerPosition = dropPosition;
+        }        
+        this.turnInfo = new TurnInfo(!whiteIsNext, pieces, lastComputerPosition, lastPlayerPosition);
     }
 
     handleShowInfoDesktop() {
         alert("If you are not in a desktop, you need to click on the three dots and uncheck the option \"Site for computer\" to make site behavior for mobile");
+    }
+
+    undoReplayPlay() {  
+        this.gameReplay.goBefore();
+        var pieces = this.state.pieces;
+        var ppm = this.gameReplay.ppmsChoises[this.gameReplay.currentPlay];
+        CheckersHelper.updatePieceInUndoPlay(pieces, ppm, !this.gameReplay.firstPlayerTime);
+        
+        const [whitesCount, blacksCount] = CheckersHelper.getTotalPiecesForColor(pieces);
+
+        this.setState({
+            ...this.state, 
+            pieces: pieces,
+            count: this.state.count - 1,
+            blacksCount: blacksCount,
+            whitesCount: whitesCount,
+            whiteIsNext: this.gameReplay.isFirstPlayerTime(),
+            running: true
+        });
     }
 
     handleMovePiece = (dragPosition, dropPosition) => {
@@ -119,12 +157,15 @@ export class Game extends React.Component {
         }   
 
         const gameMode = this.state.gameMode;
-        this.turnInfo.storeMove(dropPosition);
+        this.turnInfo.storeMove(dragPosition, dropPosition);
         let pieces = this.state.pieces.slice();
-        let whiteIsNext = this.state.whiteIsNext;
+        let whiteIsNext = this.gameReplay ? this.gameReplay.isFirstPlayerTime() : this.state.whiteIsNext;
         pieces[dropPosition] = pieces[dragPosition];
         pieces[dragPosition] = null;
+        var movements = this.state.movements;
         if (this.turnInfo.finished) {
+            movements.push(CheckersHelper.getXY(this.turnInfo.originalPosition) + "-" + 
+                CheckersHelper.getXY(dropPosition))
             this.handleTurnEnd(pieces, whiteIsNext, gameMode, dropPosition);
             whiteIsNext = !whiteIsNext;
         }
@@ -132,11 +173,13 @@ export class Game extends React.Component {
         const winner = this.getTheWinner(pieces, whiteIsNext);
 
         this.setState({
-            ...this.state, pieces: pieces,
+            ...this.state, 
+            pieces: pieces,
             count: this.state.count + 1,
             blacksCount: blacksCount,
             whitesCount: whitesCount,
             whiteIsNext: whiteIsNext,
+            movements: movements,
             running: !winner
         });
         if (this.turnInfo.movesChosen.length > this.turnInfo.currentStep) {
@@ -145,13 +188,18 @@ export class Game extends React.Component {
         if (winner) {
             alert("Victory of " + winner + "!");
         } else {
-            if (!whiteIsNext && gameMode === GameMode.AGAINST_COMPUTER) {
+            if (!whiteIsNext && gameMode === GameMode.AGAINST_COMPUTER && !this.gameReplay) {
                 this.doComputerPlay(this.state.computerLevel);
-            }            
+            } else if(this.gameReplay && !this.turnInfo.finished && this.turnInfo.currentStep > 1) {
+                const ppm = this.turnInfo.computerPlayerChoice.ppm;
+                this.doComputerDrag(ppm.moves[this.currentStep - 1], ppm);
+            }
         }
     }
 
-    handleCanDragPiece(positionedPiece) {     
+    handleCanDragPiece(positionedPiece) {    
+        if (this.gameReplay) 
+            return DraggableCapability.CANNOT;
         if (CheckersHelper.canDragPiece(this.turnInfo, positionedPiece)) {
             return (!this.state.whiteIsNext &&
                 this.state.gameMode === GameMode.AGAINST_COMPUTER ?
@@ -160,9 +208,83 @@ export class Game extends React.Component {
         return DraggableCapability.CANNOT;
     }
 
+    handleLoadGamePlayed(fileContent) {
+        const savedGameJson = JSON.parse(fileContent);
+        console.log("File content: " + fileContent);
+        const gameMode = savedGameJson.gameMode;
+        const computerLevel = savedGameJson.computerLevel;
+        var gameRecord = new GameRecord(gameMode, computerLevel);
+        for (let turnMoviment of savedGameJson.turnMovements) {
+            gameRecord.addTurnMoviment(turnMoviment);
+        }
+        this.turnInfo = new TurnInfo(true, CheckersHelper.mountInitialPieces(), null);
+        this.gameReplay = new GameReplay(gameRecord);
+        this.setState({...this.mountInitialState(gameMode, computerLevel), gameLoaded: true, running: true, gameMode: gameMode, computerLevel: computerLevel, gameRecord: gameRecord, currentPlay: 1});
+    }
+
+    handleReplayBarBtClick(action) {
+        console.log(action);
+        switch(action) {
+            case("forward"):
+                this.gameReplay.goNext();
+                let moviment = this.gameReplay.getMoviment();
+                console.log(moviment);
+                var originPosition = CheckersHelper.getPositionFromXY(moviment['origin']);
+                var ppmChoise = this.gameReplay.getPpmChoise();
+                if (ppmChoise) {
+                    this.turnInfo.registerComputerPlay(ppmChoise);         
+                    this.doComputerDrag(originPosition, ppmChoise, 1000);
+                }
+                console.log(ppmChoise);
+                break;
+            case("backward"):
+                this.undoReplayPlay();
+                return;        
+            case("stop"):
+                this.gameReplay = null;
+                this.restartOrResignGame();
+                return;                      
+            default:
+                return;
+        }
+
+    }
+
+    mountTurnMovements(movements, modoOriginal) {
+        var turnMovements = [];
+        for (let i = 0; i < Math.ceil(movements.length / 2); i++) {
+            if (modoOriginal) {
+                let blackMovement = movements[(i * 2) + 1];
+                turnMovements.push({
+                    "id" : (i + 1),
+                    "whiteMovement" : CheckersHelper.getPositionFromXY(movements[i * 2].substring(0,2)) + "-" + CheckersHelper.getPositionFromXY(movements[i * 2].substring(3,5)), 
+                    "blackMovement" : (blackMovement ? CheckersHelper.getPositionFromXY(blackMovement.substring(0,2)) + "-" + CheckersHelper.getPositionFromXY(blackMovement.substring(3,5)) : null), 
+                });
+            } else {
+                turnMovements.push({
+                    "id" : (i + 1),
+                    "whiteMovement" : movements[i * 2], 
+                    "blackMovement" : movements[(i * 2) + 1], 
+                });
+            }
+
+        }
+        return turnMovements;
+    }
+
+    mountDownloadFileContent() {
+        var objectContent = {
+            "gameMode" : this.state.gameMode,
+            "computerLevel" : this.state.computerLevel,
+            "turnMovements" : this.mountTurnMovements(this.state.movements),
+            "turnMovementsOriginal" : this.mountTurnMovements(this.state.movements, true)
+        };
+        console.log(objectContent);
+        return JSON.stringify(objectContent);
+    }
+
     getTheWinner(pieces, whiteIsNext) {
-        const [whitesCount, blacksCount] =
-            CheckersHelper.getTotalPiecesForColor(pieces);
+        const [whitesCount, blacksCount] = CheckersHelper.getTotalPiecesForColor(pieces);
         if (blacksCount === 0) {
             return PlayerNames.WHITE;
         }
@@ -221,19 +343,23 @@ export class Game extends React.Component {
         }
     }
 
-    doComputerDrag(position, ppm) {
+    doComputerDrag(position, ppm, delay) {
         this.computerDragTimer = setTimeout(() => {
             let dragPosition = this.turnInfo.currentStep > 1 ?
                 ppm.moves[this.turnInfo.currentStep - 2] :
                 position;
             this.handleMovePiece(dragPosition,
                 ppm.moves[this.turnInfo.currentStep - 1]);
-        }, 1500);
+        }, delay ? delay : 1500);
     }
 
     isLastComputerPosition(position) {
         return this.turnInfo.lastComputerPosition && this.turnInfo.lastComputerPosition === position;
     }
+
+    isLastPlayerPosition(position) {
+        return this.turnInfo.lastPlayerPosition && this.turnInfo.lastPlayerPosition === position;
+    }    
 
     toogleWindow() {
         this.setState({...this.state, gameWindowMode: this.state.gameWindowMode === 'game-normal-mode' ? "game-window-mode" : "game-normal-mode"});
@@ -261,7 +387,7 @@ export class Game extends React.Component {
                     <div className='top-bar'>Checkers
                         <button onClick={this.toogleWindow} className='btn-link'  style={{maxHeight:"1em",float:"right", paddingRight:"1em"}}>
                             {zoomButtonIcon}
-                        </button>
+                        </button>                     
                     </div>
                     <div className='alternative-top-bar'>
                         <div style={{width:"25%"}}>Checkers</div>
@@ -274,7 +400,9 @@ export class Game extends React.Component {
                         </div>
                         <div style={{width:"30%"}}>  
                             <button onClick={this.toogleWindow} className='btn-link'  style={{paddingRight:"1em"}}>{zoomButtonIcon}</button> 
-                            <button onClick={this.restartOrResignGame}>{this.state.running ? "Resign" : "Start"}</button>                               
+                            {this.state.gameLoaded ? 
+                            <div></div>:
+                            <button onClick={this.restartOrResignGame}>{this.state.running ? "Resign" : "Start"}</button>}
                         </div>                    
                     </div>
 
@@ -282,6 +410,7 @@ export class Game extends React.Component {
                 <div className="game-board">
                     <Board
                         isLastComputerPosition={this.isLastComputerPosition}
+                        isLastPlayerPosition={this.isLastPlayerPosition}
                         numRowsByLine={GameDefintions.NUM_ROWS_BY_LINE}
                         numRows={GameDefintions.NUM_ROWS}
                         handleCanDropPiece={this.handleCanDropPiece}
@@ -293,7 +422,6 @@ export class Game extends React.Component {
                         running={this.state.running}
                     />
                     {!this.state.running && <Overlay color="yellow"></Overlay>}      
-
                 </div>
                 <div className="game-info clearfix">
                     <p>{status}</p>
@@ -325,10 +453,10 @@ export class Game extends React.Component {
                         : null}
                     <p>{isMobile ? <FaMobileAlt/> : (
                         <div><FaDesktop/> <button className="btn-link" onClick={this.handleShowInfoDesktop}><FaInfoCircle/></button>
-                        </div>)}</p>                    
-                    
-                    
-                    <p><button onClick={this.restartOrResignGame}>{this.state.running ? "Resign" : "Start"}</button></p>
+                        </div>)}</p>
+                    {this.state.gameLoaded ? 
+                        <p><ReplayBar gameReplay={this.gameReplay} onButtonClick={this.handleReplayBarBtClick} /></p> : 
+                        <p><button onClick={this.restartOrResignGame}>{this.state.running ? "Resign" : "Start"}</button><br />{!this.state.running && !winner ? <FileRead onReadFile={this.handleLoadGamePlayed}/> : <FileDownload fileName="checkers.saved.dat" contentFile={this.mountDownloadFileContent}/>}</p>}
                 </div>
                 <div className="game-footer clearfix">
                     <span>Created by<br /><b>Tiago Peterlevitz Zini</b></span>

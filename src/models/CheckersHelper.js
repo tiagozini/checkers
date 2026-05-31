@@ -28,6 +28,10 @@ export default class CheckersHelper {
                 Math.trunc(position / GameDefintions.NUM_ROWS_BY_LINE));
     }
 
+    static getPositionFromXY(xy) {
+        return Number.parseInt(xy[1]) * 8 + Number.parseInt(xy[0]);
+    }
+
     static getY(position) {
         return Math.trunc(position / GameDefintions.NUM_ROWS_BY_LINE);
     }
@@ -44,7 +48,7 @@ export default class CheckersHelper {
             return Math.min(dxRight, dyDown);
     }
 
-    static getManCaptureMoves(positionedPiece, moves, piecesCaptured, pieces) {
+    static getManCaptureMoves(positionedPiece, moves, pieceCapturedPositions, pieces) {
         const position = moves.length > 0 ? moves.slice(-1)[0] :
             positionedPiece.position;
         const [x, y] = this.getXAndY(position);
@@ -60,19 +64,22 @@ export default class CheckersHelper {
                 enemyPositionMoreOne,
                 this.getOpositeColor(positionedPiece.color),
                 pieces)
-                && piecesCaptured.filter((positionCaptured) =>
+                && pieceCapturedPositions.filter((positionCaptured) =>
                     positionCaptured === enemyPosition).length === 0) {
                 upperMoves.push(
                     this.getManCaptureMoves(positionedPiece,
                         moves.concat(enemyPositionMoreOne),
-                        piecesCaptured.concat(enemyPosition),
+                        pieceCapturedPositions.concat(enemyPosition),
                         pieces)
                 );
             }
         }
         let ppmList = [];
         if (upperMoves.length === 0 && moves.length > 0) {
-            ppmList.push(new PiecePossibleMoves(positionedPiece.position, moves, piecesCaptured));
+            let pieceCapturedTypes = pieces.filter(function(element, index, array) {
+                 return pieceCapturedPositions.includes(index);
+                }).map(e => e.type);
+            ppmList.push(new PiecePossibleMoves(positionedPiece.position, moves, pieceCapturedPositions, pieceCapturedTypes, positionedPiece.type));
         } else {
             for (let moveItens of upperMoves) {
                 for (let miniMove of moveItens) {
@@ -99,7 +106,7 @@ export default class CheckersHelper {
                 }
             }
         }
-        return positions.map((p) => new PiecePossibleMoves(position, [p], []));
+        return positions.map((p) => new PiecePossibleMoves(position, [p], [], [], p.type));
     }
 
     static getDiagonalOperations(diagonalType) {
@@ -148,9 +155,8 @@ export default class CheckersHelper {
         return [positionsMoved, enemyPosition];
     }
 
-    static getKingCaptureMoves(positionedPiece, moves, piecesCaptured, pieces) {
-        const position = moves.length > 0 ? moves.slice(-1)[0] :
-            positionedPiece.position;
+    static getKingCaptureMoves(positionedPiece, moves, pieceCapturedPositions, pieces) {
+        const position = moves.length > 0 ? moves.slice(-1)[0] : positionedPiece.position;
         const [xFrom, yFrom] = this.getXAndY(position);
         let upperMoves = [];
         for (let diagonalType of this.DIAGONAL_TYPES_LIST) {
@@ -159,17 +165,18 @@ export default class CheckersHelper {
                 const [newMovesPositions, enemyPosition] =
                     this.getKingDiagonalCaptureMoves(xFrom, yFrom,
                         this.getOpositeColor(positionedPiece.color),
-                        size, diagonalType, piecesCaptured, pieces);
+                        size, diagonalType, pieceCapturedPositions, pieces);
                 for (let pos of newMovesPositions) {
                     upperMoves.push(this.getKingCaptureMoves(positionedPiece,
-                        moves.concat(pos), piecesCaptured.concat(enemyPosition),
+                        moves.concat(pos), pieceCapturedPositions.concat(enemyPosition),
                         pieces));
                 }
             }
         }
         let arr = [];
         if (upperMoves.length === 0 && moves.length > 0) {
-            arr.push(new PiecePossibleMoves(positionedPiece.position, moves, piecesCaptured));
+            let pieceCapturedTypes = pieces.filter((element, index, array) => pieceCapturedPositions.includes(index)).map(e => e.type);               
+            arr.push(new PiecePossibleMoves(positionedPiece.position, moves, pieceCapturedPositions, pieceCapturedTypes, positionedPiece.type));
         } else {
             for (let moveItens of upperMoves) {
                 for (let miniMove of moveItens) {
@@ -253,7 +260,7 @@ export default class CheckersHelper {
                 const lastPosition = this.getPosition(xPart, y + yOperation);
                 // ve se movimento excede os limites laterais e se o destino nao tem uma peca nele
                 if (xPart >= 0 && xPart <= 7 && yOperation != null && pieces[lastPosition] === null) {
-                    ppmList.push(new PiecePossibleMoves(positionedPiece.position, [lastPosition], []));
+                    ppmList.push(new PiecePossibleMoves(positionedPiece.position, [lastPosition], [], [], positionedPiece.type));
                 }
             }
         }
@@ -454,5 +461,38 @@ export default class CheckersHelper {
             return 0;                       
         });
 
+    }
+
+    static updatePieceInUndoPlay(pieces, ppm, whiteIsNext) {
+        const dropPosition = ppm.getLastMovePosition();
+        pieces[ppm.originalPosition] = pieces[dropPosition];
+        pieces[ppm.originalPosition].type = ppm.originalType;
+        pieces[dropPosition] = null;
+        const opositeColor = whiteIsNext ? ColorTypes.BLACK : ColorTypes.WHITE;
+        for (let i = 0 ; i < ppm.piecesCaptured.length; i++) {
+            pieces[ppm.piecesCaptured[i]] = new Piece(opositeColor, ppm.piecesCapturedTypes[i]);
+        }
+    }    
+
+    static updatePiecesInTheTurnEnd(pieces, originalPosition, ppm) {
+        const dropPosition = ppm.getLastMovePosition();
+        pieces[dropPosition] = pieces[originalPosition];
+        pieces[originalPosition] = null;
+        for (let p of ppm.piecesCaptured) {
+            pieces[p] = null;
+        }
+        if (CheckersHelper.canPutTheCrown(pieces[dropPosition], dropPosition)) {
+            pieces[dropPosition].type = PieceTypes.KING;
+        }
+    }
+
+    static getPiecesCapturedType(piecePossibleMoves, pieces) {
+        var types = [];
+        for (let i = 0; i < piecePossibleMoves.getPiecesCapturedPosition().length; i++) {
+            var position = piecePossibleMoves.getPiecesCapturedPosition()[i];
+            var piece = pieces[position];
+            types.push(piece.type);
+        }
+        return types;
     }
 }

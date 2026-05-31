@@ -37,8 +37,8 @@ export default function BoardSquare(props) {
     }),
   }), [props.position])
 
-  return (<div ref={drop} className="board-square"><Square position={props.position}
-    piece={props.piece}>{props.children}</Square>
+  return (<div ref={drop} className="board-square">
+    <Square position={props.position} piece={props.piece}>{props.children}</Square>
     {isOver && canDrop === false && <Overlay color="red" />}
     {!isOver && canDrop && <Overlay color="yellow" />}
     {isOver && canDrop && <Overlay color="green" />}

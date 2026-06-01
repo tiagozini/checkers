@@ -297,7 +297,7 @@ export class Game extends React.Component {
     }
 
     doComputerFirstMove(computerLevel) {
-        let checkLevel = null;
+        let checkLevel = 0;
         if (ComputerLevel.DUMMY === computerLevel) {
             return this.doComputerFirstMoveDummy();
         } else if (ComputerLevel.SMART === computerLevel) {

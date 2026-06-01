@@ -6,7 +6,7 @@ export default class CheckersMinMax {
 
     static globalOutputList = [];
 
-    static getMMTurnMovementsPoints(pieces, originalPosition, ppm, whiteIsNext, deep, backtrack, tracePoints="") {
+    static getMMTurnMovementsPoints(pieces, originalPosition, ppm, whiteIsNext, deep, backtrack, tracePoints="", deepOriginal) {
         // obtem pontos
         let points = CheckersMinMax.getTurnMovementsPoints(pieces, originalPosition, ppm);
         let oldType = pieces[originalPosition].type;
@@ -16,7 +16,7 @@ export default class CheckersMinMax {
         }
         let newBacktrack = backtrack + ((whiteIsNext ? "W" : "B") + ppm.formatMovement());
         CheckersMinMax.applyTurnMoviments(pieces, originalPosition, ppm);
-        let rtn = CheckersMinMax.negamax(pieces, !whiteIsNext, deep - 1, 9999, newBacktrack, tracePoints + points + (!whiteIsNext?" - ":" + "));
+        let rtn = CheckersMinMax.negamax(pieces, !whiteIsNext, deep - 1, deepOriginal, newBacktrack, tracePoints + points + (!whiteIsNext?" - ":" + "));
         points -= rtn[2]
         CheckersMinMax.unapplyTurnMoviments(pieces, originalPosition, ppm, backupPieces, oldType);
         return [points, rtn[3], rtn[4]];
@@ -57,9 +57,10 @@ export default class CheckersMinMax {
         for (let position = 0; position < turnInfo.piecesPossibleMoves.length; position++) {
             if (turnInfo.piecesPossibleMoves[position]) {
                 for (let piecePossibleMove of turnInfo.piecesPossibleMoves[position]) {
-                    let rtn = CheckersMinMax.getMMTurnMovementsPoints(pieces, position, piecePossibleMove, whiteIsNext, deep, backtrack, tracePoints);
+                    let rtn = CheckersMinMax.getMMTurnMovementsPoints(pieces, position, piecePossibleMove, whiteIsNext, deep, backtrack, tracePoints, deepOriginal);
+                    points = rtn[0]
                     if (maxPoints === null || points > maxPoints) {
-                        maxPoints = rtn[0];
+                        maxPoints = points;
                         ffBacktrack = rtn[1];
                         ffTracePoints = rtn[2];
                         bestPosition = position;

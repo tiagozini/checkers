@@ -306,7 +306,7 @@ export class Game extends React.Component {
             checkLevel = 3;
         }
         let deep = checkLevel * 2;
-        const [position, ppm, maxPoints] = CheckersMinMax.negamax(this.state.pieces.slice(), this.state.whiteIsNext, deep, deep);
+        const [position, ppm] = CheckersMinMax.negamax(this.state.pieces.slice(), this.state.whiteIsNext, deep, deep);
         this.turnInfo.registerComputerPlay(ppm);
         this.doComputerDrag(position, ppm);
     }

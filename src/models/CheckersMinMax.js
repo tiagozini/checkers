@@ -39,7 +39,7 @@ export default class CheckersMinMax {
         }
         let turnInfo = new TurnInfo(whiteIsNext, pieces, null);
         if (!turnInfo.existsPossibleMove()) {
-            return - MinMaxPoints.IMPOSSIBILITY_MORE_MOVES;
+            return [null, null, - MinMaxPoints.IMPOSSIBILITY_MORE_MOVES, backtrack, tracePoints + "0"];
         }
         let points = 0;
         let maxPoints = null;

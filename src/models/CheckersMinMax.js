@@ -1,12 +1,12 @@
-import { ColorTypes, MinMaxPoints, PieceTypes } from "../Constants";
+import { ColorTypes, MinMaxPoints, PieceTypes, PriorizerStrategy } from "../Constants";
 import CheckersHelper from "./CheckersHelper";
 import { TurnInfo } from "./TurnInfo";
 
 export default class CheckersMinMax {
 
     static globalOutputList = [];
-
-    static getMMTurnMovementsPoints(pieces, originalPosition, ppm, whiteIsNext, deep, backtrack, tracePoints="", deepOriginal) {
+    static globalBestList = [];
+    static getMMTurnMovementsPoints(pieces, originalPosition, ppm, whiteIsNext, deep, backtrack, tracePoints="", deepOriginal, priorizerStrategy, alfa, beta) {
         // obtem pontos
         let points = CheckersMinMax.getTurnMovementsPoints(pieces, originalPosition, ppm);
         let oldType = pieces[originalPosition].type;
@@ -16,8 +16,15 @@ export default class CheckersMinMax {
         }
         let newBacktrack = backtrack + ((whiteIsNext ? "W" : "B") + ppm.formatMovement());
         CheckersMinMax.applyTurnMoviments(pieces, originalPosition, ppm);
-        let rtn = CheckersMinMax.negamax(pieces, !whiteIsNext, deep - 1, deepOriginal, newBacktrack, tracePoints + points + (!whiteIsNext?" - ":" + "));
-        points -= rtn[2]
+        let rtn = CheckersMinMax.negamax(pieces, !whiteIsNext, deep - 1, deepOriginal, newBacktrack, tracePoints + points + (!whiteIsNext?" - ":" + "), priorizerStrategy, alfa, beta);
+        if (priorizerStrategy === PriorizerStrategy.STANDARD) { 
+            points -= rtn[2]; 
+        } else if (priorizerStrategy === PriorizerStrategy.CLOSEST || priorizerStrategy === PriorizerStrategy.SAFEST) {
+            let turnsQtd = Math.ceil(deepOriginal / 2);
+            let turnId = Math.ceil((deep) / 2);
+            let percent =  (turnId) / turnsQtd;
+            points -= rtn[2] * percent;
+        }
         CheckersMinMax.unapplyTurnMoviments(pieces, originalPosition, ppm, backupPieces, oldType);
         return [points, rtn[3], rtn[4]];
     }
@@ -31,9 +38,14 @@ export default class CheckersMinMax {
      * @param {*} whiteIsNext 
      * @param {*} deep 
      * @param {*} deepOriginal 
+     * @param {*} backtrack 
+     * @param {*} tracePoints 
+     * @param {*} priorizerStrategy 
+     * @param {*} alfa 
+     * @param {*} beta 
      * @returns 
      */
-    static negamax(pieces, whiteIsNext, deep, deepOriginal=9999, backtrack="", tracePoints = "") {
+    static negamax(pieces, whiteIsNext, deep, deepOriginal=9999, backtrack="", tracePoints = "", priorizerStrategy = PriorizerStrategy.STANDARD, alfa, beta) {
         if (deep === 0) {
             return [null, null, 0, backtrack, tracePoints + "0"];
         }
@@ -49,6 +61,8 @@ export default class CheckersMinMax {
         let ffTracePoints = null;
         if (deep === deepOriginal) {
             CheckersMinMax.globalOutputList = [];
+            CheckersMinMax.globalList = [];
+            CheckersMinMax.globalBestList = [];
         }
         // issues to think:
         // - piecesPossibleMoves <- entidades desconectadas... sempre novas
@@ -56,8 +70,12 @@ export default class CheckersMinMax {
         let letterTurn = whiteIsNext ? "W" : "B";
         for (let position = 0; position < turnInfo.piecesPossibleMoves.length; position++) {
             if (turnInfo.piecesPossibleMoves[position]) {
+                if (deep === deepOriginal && turnInfo.piecesPossibleMoves[position].length>0) {
+                    console.log("" +position +"->"+CheckersHelper.getXY(position));
+                    console.log(turnInfo.piecesPossibleMoves[position]);
+                }
                 for (let piecePossibleMove of turnInfo.piecesPossibleMoves[position]) {
-                    let rtn = CheckersMinMax.getMMTurnMovementsPoints(pieces, position, piecePossibleMove, whiteIsNext, deep, backtrack, tracePoints, deepOriginal);
+                    let rtn = CheckersMinMax.getMMTurnMovementsPoints(pieces, position, piecePossibleMove, whiteIsNext, deep, backtrack, tracePoints, deepOriginal, priorizerStrategy, alfa, beta);
                     points = rtn[0]
                     if (maxPoints === null || points > maxPoints) {
                         maxPoints = points;
@@ -65,18 +83,32 @@ export default class CheckersMinMax {
                         ffTracePoints = rtn[2];
                         bestPosition = position;
                         bestPpm = piecePossibleMove;
-                        if (deep === 1) {
+                        /*if (deep === 1) {
                             CheckersMinMax.globalOutputList.push({"deep" : deep, "deepOriginal" : deepOriginal, "maxPoints" : maxPoints, 
                                 "movement": letterTurn + piecePossibleMove.formatMovement(),
                                  "backtrack": backtrack, "tracePoints":tracePoints, "traceBkSubTotais": CheckersHelper.traceBkSubTotais(tracePoints + maxPoints)});
                         }
+                        if (deep === deepOriginal) {
+                            CheckersMinMax.globalBestList.push({"deep" : deep, "deepOriginal" : deepOriginal, "maxPoints" : maxPoints, 
+                                "movement": letterTurn + piecePossibleMove.formatMovement(),
+                                 "backtrack": backtrack, "tracePoints":tracePoints, "traceBkSubTotais": CheckersHelper.traceBkSubTotais(tracePoints + maxPoints)});
+                        }  */                      
                     }
+                    /*if (deep === deepOriginal) {
+                        CheckersMinMax.globalList.push({"deep" : deep, "deepOriginal" : deepOriginal, "maxPoints" : points, 
+                            "movement": letterTurn + piecePossibleMove.formatMovement(),
+                                "backtrack": rtn[1], "tracePoints":rtn[2], "traceBkSubTotais": CheckersHelper.traceBkSubTotais(rtn[2] + points)});
+                                
+                    }*/
                 }
             }
         }
         if (deep === deepOriginal) {
-            console.log(CheckersMinMax.globalOutputList);
+            /*console.log(CheckersMinMax.globalOutputList);
             console.log(CheckersHelper.sortBySubTotais(CheckersMinMax.globalOutputList));
+            console.log(CheckersMinMax.globalList);
+            console.log(CheckersMinMax.globalBestList);            
+            */
             console.log("negamax-> deep=" + deep + "; deepOriginal=" + deepOriginal + "; maxPoints=" + maxPoints + "; bestPosition=" + letterTurn + bestPpm.formatMovement() +"; ffBacktrack=" + ffBacktrack +"; " + ffTracePoints)
             return [bestPosition, bestPpm, maxPoints, ffBacktrack, ffTracePoints];
         }

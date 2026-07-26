@@ -474,10 +474,10 @@ export default class CheckersHelper {
         }
     }    
 
-    static updatePiecesInTheTurnEnd(pieces, originalPosition, ppm) {
+    static updatePiecesInTheTurnEnd(pieces, ppm) {
         const dropPosition = ppm.getLastMovePosition();
-        pieces[dropPosition] = pieces[originalPosition];
-        pieces[originalPosition] = null;
+        pieces[dropPosition] = pieces[ppm.getOriginalPosition()];
+        pieces[ppm.getOriginalPosition()] = null;
         for (let p of ppm.piecesCaptured) {
             pieces[p] = null;
         }

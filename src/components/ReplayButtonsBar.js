@@ -14,21 +14,23 @@ export default function ReplayBar(props) {
   
   const hadleClickStop = () => {
     props.onButtonClick('stop');
+    
   }
   
   const hadleClickbackward = () => {
     props.onButtonClick('backward');
   }
   const gameReplay = props.gameReplay;
+  const disabled = props.disabled;
   const hideBefore = gameReplay.currentPlay === 0;
   const hideNext = gameReplay.currentPlay === gameReplay.totalPlays;
   return (
     <div>
       <span>{gameReplay.currentPlay}/{gameReplay.totalPlays}</span>
     <ButtonGroup aria-label="Basic example">
-      <Button size="sm" variant="secondary" hidden={hideBefore} onClick={hadleClickbackward}>{backwardBtIcon}</Button>       
-      <Button size="sm" variant="secondary" onClick={hadleClickStop}>{stopCircleBtIcon}</Button>
-      <Button size="sm" variant="secondary" hidden={hideNext} onClick={handleClickFFButton}>{forwardBtIcon}</Button>     
+      <Button size="sm" variant="secondary" disabled={disabled} hidden={hideBefore} onClick={hadleClickbackward}>{backwardBtIcon}</Button>       
+      <Button size="sm" variant="secondary" disabled={disabled} onClick={hadleClickStop}>{stopCircleBtIcon}</Button>
+      <Button size="sm" variant="secondary" disabled={disabled} hidden={hideNext} onClick={handleClickFFButton}>{forwardBtIcon}</Button>     
     </ButtonGroup>
     </div>
   );

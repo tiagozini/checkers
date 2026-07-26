@@ -13,10 +13,22 @@ export default function FileRead(props) {
     console.log(file);
     if (file) {
       const reader = new FileReader();
+        console.log("Pre ... Lendo...");
+
       reader.onload = (e) => {
+        console.log("Lendo...");
         props.onReadFile(e.target.result);
+        console.log("Voltando da leitura Lendo...");
+
       };
-      reader.readAsText(file);      
+      reader.onerror = (e) => {
+        props.onError(e, reader.error);
+      };      
+      console.log("Pos ... Lendo...");
+
+      reader.readAsText(file);     
+        console.log("Pos... pos ... Lendo...");
+
     }
   };
   const uploadButtonIcon = <FaUpload />;

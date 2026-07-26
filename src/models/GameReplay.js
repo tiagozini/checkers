@@ -7,6 +7,7 @@ export class GameReplay {
     gameRecord = null;
     firstPlayerTime = null;
     currentPlay = null;
+    turnInfos = null;
 
     constructor(gameRecord) { 
         this.gameRecord = gameRecord;
@@ -15,26 +16,26 @@ export class GameReplay {
         this.currentPlay = 0;
         this.turnId = 0;
         this.firstPlayerTime = false;
-        this.ppmsChoises = this.calculatePpmsChoises(gameRecord);
+        this.turnInfos = this.calculateTurnInfos(gameRecord);
     } 
 
-    calculatePpmsChoises(gameRecord) {
+    calculateTurnInfos(gameRecord) {
         var pieces = CheckersHelper.mountInitialPieces();
         var turnInfo = null;
         var ppmChoise = null;
-        var moviment = null;
+        var movement = null;
         var originPosition = null;
         var targetPosition = null;
-        var ppmChoises = [];
+        var turnInfos = [];
         var piecesCapturedTypeByTurn = [];
 
         for (let i=0; i< gameRecord.turnMovements.length; i++ ) {
             for (let pl=0; pl< 2; pl++ ) {
-                moviment = this.getMovimentBy(i, pl);
-                if (moviment) {
-                    console.log("moviment= " + moviment);
-                    originPosition = CheckersHelper.getPositionFromXY(moviment['origin']);
-                    targetPosition = CheckersHelper.getPositionFromXY(moviment['target']);        
+                movement = this.getMovimentBy(i, pl);
+                if (movement) {
+                    console.log("movement= " + movement);
+                    originPosition = CheckersHelper.getPositionFromXY(movement['origin']);
+                    targetPosition = CheckersHelper.getPositionFromXY(movement['target']);        
                     turnInfo = new TurnInfo(pl === 0, pieces, null);
                     ppmChoise = null;
                     if (turnInfo.piecesPossibleMoves[originPosition]) {
@@ -42,41 +43,48 @@ export class GameReplay {
                             if (ppm.getLastMovePosition() === targetPosition) {
                                 ppmChoise = ppm;
                                 piecesCapturedTypeByTurn.push(CheckersHelper.getPiecesCapturedType(ppm, pieces));
-                                CheckersHelper.updatePiecesInTheTurnEnd(pieces, originPosition, ppmChoise);
+                                CheckersHelper.updatePiecesInTheTurnEnd(pieces, ppmChoise);
                                 break;
                             }                
                         }
                     }
-                    ppmChoises.push(ppmChoise);
+                    turnInfos.push(new TurnInfo(pl === 0, pieces, ppmChoise));
                 }
             }
 
         }
-        console.log(ppmChoises)
-        return ppmChoises;
+        console.log(turnInfos)
+        return turnInfos;
     }
 
     getMoviment(id) {
         let playerLabel = this.firstPlayerTime ? 'whiteMovement' : 'blackMovement';
-        let moviment = this.gameRecord.turnMovements[this.turnId-1][playerLabel].split("-");
-        return {'origin' : moviment[0], 'target': moviment[1] };
+        let movement = this.gameRecord.turnMovements[this.turnId-1][playerLabel].split("-");
+        return {'origin' : movement[0], 'target': movement[1] };
     }
 
-    getMovimentBy(movimentId, pl) {
+    getMovimentBy(movementId, pl) {
         let playerLabel = pl === 0 ? 'whiteMovement' : 'blackMovement';
-        let playerMoviment = this.gameRecord.turnMovements[movimentId][playerLabel];
+        let playerMoviment = this.gameRecord.turnMovements[movementId][playerLabel];
         if (playerMoviment) {
-            let movimentParts = this.gameRecord.turnMovements[movimentId][playerLabel].split("-");
-            return {'origin' : movimentParts[0], 'target': movimentParts[1] };
+            let movementParts = this.gameRecord.turnMovements[movementId][playerLabel].split("-");
+            return {'origin' : movementParts[0], 'target': movementParts[1] };
         }
         return null;
     }
 
-    getPpmChoise() {
+    getTurnInfo() {
         console.log("currentPlay: "  + this.currentPlay);
         if (this.currentPlay === 0)
-            return 0;
-        return this.ppmsChoises[this.currentPlay - 1];
+            return null;
+        return this.turnInfos[this.currentPlay - 1];
+    }
+
+    getLastTurnInfo() {
+        console.log("currentPlay: "  + this.currentPlay);
+        if (this.currentPlay <= 1)
+            return null;
+        return this.turnInfos[this.currentPlay - 2];
     }
 
     goNext() {
@@ -84,6 +92,9 @@ export class GameReplay {
             this.currentPlay++;
             this.turnId = Math.ceil(this.currentPlay/2);
             this.firstPlayerTime = this.currentPlay % 2 === 1;
+            // FIXME externarlizar esse controle
+            if (this.currentPlay > 0)
+                this.turnInfos[this.currentPlay - 1].currentStep = 1;            
         }
     }
 
@@ -91,7 +102,10 @@ export class GameReplay {
         if (this.hasBefore()) {
             this.currentPlay--;
             this.turnId = Math.ceil(this.currentPlay/2);
-            this.firstPlayerTime = this.currentPlay % 2 === 1
+            this.firstPlayerTime = this.currentPlay % 2 === 1;
+            // FIXME externarlizar esse controle
+            if (this.currentPlay > 0)
+                this.turnInfos[this.currentPlay - 1].currentStep = 1; // reseta o contadordos passos
         }
     }
     

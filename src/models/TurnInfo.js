@@ -4,34 +4,39 @@ import CheckersHelper from "./CheckersHelper";
 export class TurnInfo {
     playerColor = null;
     f = null;
-    capturedPiecePositions = null;
     currentStep = null;
     movesChosen = null;
     finished = null;
     numPossibleSteps = null;
     originalPosition = null;
     piecesPossibleMoves = [];
-    lastComputerPosition = null;
-    lastPlayerPosition = null;
-    computerPlayerChoice = null;
+    playerChoice = null;
 
-    constructor(whiteIsNext, pieces, lastComputerPosition, lastPlayerPosition) {
+    constructor(whiteIsNext, pieces, playerChoice) {
         this.currentStep = 1;
-        this.movesChosen = [];
-        this.capturedPiecePositions = [];
-        this.finished = false;
+        this.movesChosen = playerChoice ? playerChoice.moves : [];
+        this.playerChoice = playerChoice;
+        this.finished = !!playerChoice;
         this.playerColor = whiteIsNext ? ColorTypes.WHITE : ColorTypes.BLACK;
         this.piecesPossibleMoves = CheckersHelper.getPossibleMoves(pieces.slice(), whiteIsNext);
         this.numPossibleSteps = this.getNumPossibleMoves(this.piecesPossibleMoves);
-        this.lastComputerPosition = lastComputerPosition;
-        this.lastPlayerPosition = lastPlayerPosition;
         this.originalPosition = null;
     }
 
+    lastComputerPosition() {
+        if (this.playerColor === ColorTypes.WHITE)
+            return null;
+        return this.playerChoice && this.playerChoice.getLastMovePosition();
+    }
+
+    lastPlayerPosition() {
+        if (this.playerColor === ColorTypes.BLACK)
+            return null;        
+        return this.playerChoice && this.playerChoice.getLastMovePosition();
+    }
+
     registerComputerPlay(piecePossibleMoves) {
-        this.computerPlayerChoice = {
-            ppm: piecePossibleMoves
-        };
+        this.playerChoice = piecePossibleMoves;
     }
 
     getNumPossibleMoves(piecesPossibleMoves) {
@@ -49,7 +54,7 @@ export class TurnInfo {
     updateOriginalPosition(dragPiecePositioned) {
         if (this.currentStep === 1) {
             this.originalPosition = dragPiecePositioned.position;
-            console.log("this.originalPosition:" + this.originalPosition);
+            //console.log("this.originalPosition:" + this.originalPosition);
         }
     }
 
@@ -70,38 +75,52 @@ export class TurnInfo {
     }
 
     retriveLastCapturePosition() {
-        //for (let position = 0; position < GameDefintions.NUM_ROWS; position++) {
-            if (this.piecesPossibleMoves[this.originalPosition]) {
-                for (let ppm of this.piecesPossibleMoves[this.originalPosition]) {
-                    let found = true;
-                    for (let i = 0; i < this.currentStep; i++) {
-                        if (ppm.moves[i] !== this.movesChosen[i]) {
-                            found = false;
-                        }
-                    }
-                    if (found) {
-                        return ppm.piecesCaptured[this.currentStep - 1];
+        if (this.piecesPossibleMoves[this.originalPosition]) {
+            for (let ppm of this.piecesPossibleMoves[this.originalPosition]) {
+                let found = true;
+                for (let i = 0; i < this.currentStep; i++) {
+                    if (ppm.moves[i] !== this.movesChosen[i]) {
+                        found = false;
                     }
                 }
+                if (found) {
+                    return ppm.piecesCaptured[this.currentStep - 1];
+                }
             }
-        //}
+        }
         return null;
     }
+
+    getPpmChoiceByMovesChosen() {
+        if (this.piecesPossibleMoves[this.originalPosition]) {
+            for (let ppm of this.piecesPossibleMoves[this.originalPosition]) {
+                let found = true;
+                if (ppm.moves.length !== this.currentStep)
+                    continue;
+                for (let i = 0; i < this.currentStep; i++) {
+                    if (ppm.moves[i] !== this.movesChosen[i]) {
+                        found = false;
+                    }
+                }
+                if (found) {
+                    return ppm;
+                }
+            }
+        }
+        return null;
+    }    
 
     storeMove(dragPosition, dropPosition) {
         this.movesChosen.push(dropPosition);
         if (this.movesChosen.length === 1) {
             this.originalPosition = dragPosition;
-            //console.log("originalPosition: " + this.originalPosition);
         }
         this.finished = (this.numPossibleSteps === this.currentStep);
         this.reducePiecesPossibleMoves();
-        let lastCapturedPiece = this.retriveLastCapturePosition();
-        if (lastCapturedPiece) {
-            this.capturedPiecePositions.push(lastCapturedPiece);
-        }
         if (!this.finished) {
             this.currentStep++;
+        } else {
+            this.playerChoice = this.getPpmChoiceByMovesChosen();
         }
     }
 

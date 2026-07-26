@@ -29,4 +29,8 @@ export class PiecePossibleMoves {
     getPiecesCapturedPosition() {
         return this.piecesCaptured;
     }
+
+    getOriginalPosition() {
+        return this.originalPosition;
+    }    
 }

@@ -55,8 +55,8 @@ export const MinMaxPoints = {
   CAPTURE_KING: 15,
   CAPUTRE_MAN: 10,
   BECAME_KING: 20,
-  MOVE_MAN: 1,
-  MOVE_KING: 2,
+  MOVE_MAN: 0,
+  MOVE_KING: 0,
   ELIMINATE_LAST_PIECE: 1000,
   IMPOSSIBILITY_MORE_MOVES: 1000
 }
@@ -64,5 +64,12 @@ export const MinMaxPoints = {
 export const ComputerLevel = {
   DUMMY: 'DUMMY',
   SMART: 'SMART',
-  GENIUS: 'GENIUS'
+  GENIUS: 'GENIUS',
+  GOD: 'GOD'
+}
+
+export const PriorizerStrategy = {
+  STANDARD: 'STANDARD',
+  CLOSEST: 'CLOSEST',
+  SAFEST: 'SAFEST'
 }

@@ -10,6 +10,10 @@ export default function BoardSquare(props) {
     props.handleMovePiece(originalPosition, targetPosition);
   }
 
+  function getEspecialBackground(position) {
+    return props.handleSpecialBackground(position);
+  }
+
   /***
    * Return 3 possibles returns:
    * false when cant move to that place
@@ -44,5 +48,6 @@ export default function BoardSquare(props) {
     {isOver && canDrop && <Overlay color="green" />}
     {!isOver && canDrop === undefined && <Overlay color="orange" />}
     {isOver && canDrop === undefined && <Overlay color="red" />}
+    {getEspecialBackground(props.position) != null && <Overlay color={getEspecialBackground(props.position)} />}
   </div>);
 }

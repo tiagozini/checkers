@@ -22,6 +22,7 @@ export class Board extends React.Component {
         this.handleCanDragPiece = props.handleCanDragPiece.bind(this);
         this.isLastComputerPosition = props.isLastComputerPosition.bind(this);
         this.isLastPlayerPosition = props.isLastPlayerPosition.bind(this);
+        this.handleSpecialBackground = props.handleSpecialBackground.bind(this);
     }
 
     renderSquare(position) {
@@ -35,6 +36,7 @@ export class Board extends React.Component {
                     position={position}
                     handleMovePiece={this.handleMovePiece}
                     handleCanDropPiece={this.handleCanDropPiece}
+                    handleSpecialBackground={this.handleSpecialBackground}
                     whiteIsNext={this.props.whiteIsNext}
                     count={this.props.count}
                     piece={piece} >

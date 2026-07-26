@@ -1,6 +1,7 @@
 import React from 'react';
 import CheckersHelper from '../models/CheckersHelper';
-import CheckersMinMax from '../models/CheckersMinMax';
+//import CheckersMinMax from '../models/CheckersMinMax';
+import CheckersMinMaxV2 from '../models/CheckersMinMaxV2';
 import { Board } from './Board';
 import Overlay from './Overlay';
 import FileRead from './FileRead';
@@ -10,7 +11,8 @@ import { GameRecord } from '../models/GameRecord';
 import { GameReplay } from '../models/GameReplay';
 import {
     PieceTypes, PossibleMoveType, PlayerNames,
-    GameDefintions, GameMode, DraggableCapability, ComputerLevel
+    GameDefintions, GameMode, DraggableCapability, ComputerLevel,
+    ColorTypes, PriorizerStrategy
 } from '../Constants';
 import { TurnInfo } from '../models/TurnInfo';
 import { isMobile } from 'react-device-detect';
@@ -25,15 +27,17 @@ export class Game extends React.Component {
 
     constructor(props) {
         super(props);
-        let state = this.mountInitialState(GameMode.AGAINST_COMPUTER, ComputerLevel.DUMMY);
+        let state = this.mountInitialState(GameMode.AGAINST_COMPUTER, ComputerLevel.DUMMY, PriorizerStrategy.STANDARD);
         this.state = state;
         this.turnInfo = new TurnInfo(true, state.pieces, null);
+        this.lastTurnInfo = null;
         this.handleMovePiece = this.handleMovePiece.bind(this);
         this.handleCanDropPiece = this.handleCanDropPiece.bind(this);
         this.handleCanDragPiece = this.handleCanDragPiece.bind(this);
         this.restartOrResignGame = this.restartOrResignGame.bind(this);
         this.handleGameModeChange = this.handleGameModeChange.bind(this);
         this.handleComputerLevelChange = this.handleComputerLevelChange.bind(this);
+        this.handlePriorizerStrategyChange = this.handlePriorizerStrategyChange.bind(this);
         this.doComputerPlay = this.doComputerPlay.bind(this);
         this.isLastComputerPosition = this.isLastComputerPosition.bind(this);
         this.toogleWindow = this.toogleWindow.bind(this);
@@ -41,6 +45,8 @@ export class Game extends React.Component {
         this.handleLoadGamePlayed = this.handleLoadGamePlayed.bind(this);
         this.handleReplayBarBtClick = this.handleReplayBarBtClick.bind(this);
         this.mountDownloadFileContent = this.mountDownloadFileContent.bind(this);
+        this.handleSpecialBackground = this.handleSpecialBackground.bind(this);
+        this.handleReadFileError = this.handleReadFileError.bind(this);
     }
 
     restartOrResignGame() {
@@ -54,7 +60,9 @@ export class Game extends React.Component {
             let gameMode = document.getElementById("gameMode").value;
             let computerLevel = document.getElementById("computerLevel") ?
                 document.getElementById("computerLevel").value : null;
-            this.setState({...this.mountInitialState(gameMode, computerLevel),  
+            let priorizerStrategy = document.getElementById("priorizerStrategy") ?
+                document.getElementById("priorizerStrategy").value : null;                
+            this.setState({...this.mountInitialState(gameMode, computerLevel, priorizerStrategy),  
                 running: true,
                 gameLoaded: false,
                 gameWindowMode: _gameWindowMode });
@@ -83,7 +91,12 @@ export class Game extends React.Component {
         this.setState({ ...this.state, computerLevel: value });
     }
 
-    mountInitialState(gameMode, computerLevel) {
+    handlePriorizerStrategyChange(e) {
+        let value = e.target.value;
+        this.setState({ ...this.state, priorizerStrategy: value });
+    }
+
+    mountInitialState(gameMode, computerLevel, priorizerStrategy) {
         return {
             whiteIsNext: true,
             pieces: CheckersHelper.mountInitialPieces(),
@@ -92,6 +105,7 @@ export class Game extends React.Component {
             count: 1,
             gameMode: gameMode,
             computerLevel: computerLevel,
+            priorizerStrategy: priorizerStrategy,
             running: false,
             gameWindowMode : "game-normal-mode",
             gameLoaded : false,
@@ -108,35 +122,60 @@ export class Game extends React.Component {
             PossibleMoveType.LAST_MOVE : PossibleMoveType.NO_MOVE;
     }
 
+    /**
+     * Update pieces in the end of player choice movements
+     * @param {Piece[]} pieces 
+     * @param {boolean} whiteIsNext 
+     * @param {GameMode} gameMode 
+     * @param {number} dropPosition 
+     */
     handleTurnEnd(pieces, whiteIsNext, gameMode, dropPosition) {
-        for (let p of this.turnInfo.capturedPiecePositions) {
+        if (this.gameReplay)
+            this.turnInfo = this.gameReplay.getTurnInfo();
+        for (let p of this.turnInfo.playerChoice.piecesCaptured) {
             console.log("capturedPiecePositions -> " + p);
             pieces[p] = null;
         }
         if (CheckersHelper.canPutTheCrown(pieces[dropPosition], dropPosition)) {
             pieces[dropPosition].type = PieceTypes.KING;
-        }
-        let lastComputerPosition = null;
-        if (!whiteIsNext) {
-            lastComputerPosition = dropPosition;
-        }
-        let lastPlayerPosition = null;
-        if (whiteIsNext) {
-            lastPlayerPosition = dropPosition;
-        }        
-        this.turnInfo = new TurnInfo(!whiteIsNext, pieces, lastComputerPosition, lastPlayerPosition);
+        }      
+        if (this.turnInfo) 
+            this.lastTurnInfo = this.turnInfo;
+        this.turnInfo = new TurnInfo(!whiteIsNext, pieces, null);
     }
 
     handleShowInfoDesktop() {
         alert("If you are not in a desktop, you need to click on the three dots and uncheck the option \"Site for computer\" to make site behavior for mobile");
     }
 
-    undoReplayPlay() {  
+    doReplayPlay() {      
+        this.gameReplay.goNext();
+        let pieces = this.state.pieces.slice();
+        this.turnInfo = this.gameReplay.getTurnInfo(); 
+        CheckersHelper.updatePiecesInTheTurnEnd(pieces, this.turnInfo.playerChoice);
+        this.lastTurnInfo = this.gameReplay.getTurnInfo();
+        const [whitesCount, blacksCount] = CheckersHelper.getTotalPiecesForColor(pieces);
+
+        this.setState({
+            ...this.state, 
+            pieces: pieces,
+            count: this.state.count + 1,
+            blacksCount: blacksCount,
+            whitesCount: whitesCount,
+            whiteIsNext: this.gameReplay.isFirstPlayerTime(),
+            running: true
+        });
+    }
+
+    undoReplayPlay() {      
+        this.turnInfo = this.gameReplay.getTurnInfo();           
+
         this.gameReplay.goBefore();
-        var pieces = this.state.pieces;
-        var ppm = this.gameReplay.ppmsChoises[this.gameReplay.currentPlay];
-        CheckersHelper.updatePieceInUndoPlay(pieces, ppm, !this.gameReplay.firstPlayerTime);
-        
+        let pieces = this.state.pieces.slice();
+
+        CheckersHelper.updatePieceInUndoPlay(pieces, this.turnInfo.playerChoice, !this.gameReplay.firstPlayerTime);
+        this.lastTurnInfo = this.gameReplay.getTurnInfo();
+        this.turnInfo = this.gameReplay.getTurnInfo(); 
         const [whitesCount, blacksCount] = CheckersHelper.getTotalPiecesForColor(pieces);
 
         this.setState({
@@ -160,6 +199,7 @@ export class Game extends React.Component {
         this.turnInfo.storeMove(dragPosition, dropPosition);
         let pieces = this.state.pieces.slice();
         let whiteIsNext = this.gameReplay ? this.gameReplay.isFirstPlayerTime() : this.state.whiteIsNext;
+        const moveDelay = this.gameReplay ? 100 : 500;
         pieces[dropPosition] = pieces[dragPosition];
         pieces[dragPosition] = null;
         var movements = this.state.movements;
@@ -189,10 +229,10 @@ export class Game extends React.Component {
             alert("Victory of " + winner + "!");
         } else {
             if (!whiteIsNext && gameMode === GameMode.AGAINST_COMPUTER && !this.gameReplay) {
-                this.doComputerPlay(this.state.computerLevel);
+                this.doComputerPlay(this.state.computerLevel, moveDelay);
             } else if(this.gameReplay && !this.turnInfo.finished && this.turnInfo.currentStep > 1) {
-                const ppm = this.turnInfo.computerPlayerChoice.ppm;
-                this.doComputerDrag(ppm.moves[this.currentStep - 1], ppm);
+                const ppm = this.turnInfo.playerChoice;
+                this.doComputerDrag(ppm.moves[this.turnInfo.currentStep - 1], ppm, moveDelay);
             }
         }
     }
@@ -209,33 +249,35 @@ export class Game extends React.Component {
     }
 
     handleLoadGamePlayed(fileContent) {
-        const savedGameJson = JSON.parse(fileContent);
-        console.log("File content: " + fileContent);
-        const gameMode = savedGameJson.gameMode;
-        const computerLevel = savedGameJson.computerLevel;
-        var gameRecord = new GameRecord(gameMode, computerLevel);
-        for (let turnMoviment of savedGameJson.turnMovements) {
-            gameRecord.addTurnMoviment(turnMoviment);
+        try {
+            console.log("Pre load...");
+            const savedGameJson = JSON.parse(fileContent);
+            console.log("File content: " + fileContent);
+            const gameMode = savedGameJson.gameMode;
+            const computerLevel = savedGameJson.computerLevel;
+            const priorizerStrategy = savedGameJson.priorizerStrategy;
+            var gameRecord = new GameRecord(gameMode, computerLevel, priorizerStrategy);
+            for (let turnMoviment of savedGameJson.turnMovements) {
+                gameRecord.addTurnMoviment(turnMoviment);
+            }
+            this.turnInfo = new TurnInfo(true, CheckersHelper.mountInitialPieces(), null);
+            this.gameReplay = new GameReplay(gameRecord);
+            this.setState({...this.mountInitialState(gameMode, computerLevel, priorizerStrategy), gameLoaded: true, running: true, gameMode: gameMode, computerLevel: computerLevel, gameRecord: gameRecord, currentPlay: 1});
+        } catch(erro) {
+            alert("Formato do conteúdo do arquivo de replay inválido");
         }
-        this.turnInfo = new TurnInfo(true, CheckersHelper.mountInitialPieces(), null);
-        this.gameReplay = new GameReplay(gameRecord);
-        this.setState({...this.mountInitialState(gameMode, computerLevel), gameLoaded: true, running: true, gameMode: gameMode, computerLevel: computerLevel, gameRecord: gameRecord, currentPlay: 1});
     }
 
+    /**
+     * Do the chosen action.
+     * @param {text} action 
+     * @returns {void} return after the action is done
+     */
     handleReplayBarBtClick(action) {
         console.log(action);
         switch(action) {
             case("forward"):
-                this.gameReplay.goNext();
-                let moviment = this.gameReplay.getMoviment();
-                console.log(moviment);
-                var originPosition = CheckersHelper.getPositionFromXY(moviment['origin']);
-                var ppmChoise = this.gameReplay.getPpmChoise();
-                if (ppmChoise) {
-                    this.turnInfo.registerComputerPlay(ppmChoise);         
-                    this.doComputerDrag(originPosition, ppmChoise, 1000);
-                }
-                console.log(ppmChoise);
+                this.doReplayPlay();
                 break;
             case("backward"):
                 this.undoReplayPlay();
@@ -277,10 +319,11 @@ export class Game extends React.Component {
             "gameMode" : this.state.gameMode,
             "computerLevel" : this.state.computerLevel,
             "turnMovements" : this.mountTurnMovements(this.state.movements),
-            "turnMovementsOriginal" : this.mountTurnMovements(this.state.movements, true)
+            "turnMovementsOriginal" : this.mountTurnMovements(this.state.movements, true),
+            "priorizerStrategy": this.state.priorizerStrategy
         };
         console.log(objectContent);
-        return JSON.stringify(objectContent);
+        return JSON.stringify(objectContent, null, 2);
     }
 
     getTheWinner(pieces, whiteIsNext) {
@@ -291,27 +334,34 @@ export class Game extends React.Component {
         if (whitesCount === 0) {
             return PlayerNames.BLACK;
         }
-        if (!this.turnInfo.existsPossibleMove()) {
+        if (this.turnInfo && !this.turnInfo.existsPossibleMove()) {
             return whiteIsNext ? PlayerNames.BLACK : PlayerNames.WHITE;
         }
+        return '';
     }
 
-    doComputerFirstMove(computerLevel) {
+    doComputerFirstMove(computerLevel, moveDelay) {
         let checkLevel = 0;
         if (ComputerLevel.DUMMY === computerLevel) {
-            return this.doComputerFirstMoveDummy();
+            return this.doComputerFirstMoveDummy(moveDelay);
         } else if (ComputerLevel.SMART === computerLevel) {
             checkLevel = 1;
         } else if (ComputerLevel.GENIUS === computerLevel) {
             checkLevel = 3;
+        } else if (ComputerLevel.GOD === computerLevel) {
+            checkLevel = 4;
         }
         let deep = checkLevel * 2;
-        const [position, ppm] = CheckersMinMax.negamax(this.state.pieces.slice(), this.state.whiteIsNext, deep, deep);
+        //this.setState({...this.state, computerThinking: true});
+        //const [position, ppm] = CheckersMinMax.negamax(this.state.pieces.slice(), this.state.whiteIsNext, deep, deep , "", "", this.state.priorizerStrategy, CheckersMinMax.INFINITY, CheckersMinMax.INFINITY * -1);
+        const [points, ppm] = CheckersMinMaxV2.negamax(this.state.pieces.slice(), this.state.whiteIsNext, deep, deep , this.state.priorizerStrategy, CheckersMinMaxV2.INFINITY_NEG, CheckersMinMaxV2.INFINITY_POS);        
+        //this.setState({...this.state, computerThinking: false});
+        console.log("Points the player choice: " + points);
         this.turnInfo.registerComputerPlay(ppm);
-        this.doComputerDrag(position, ppm);
+        this.doComputerDrag(ppm.originalPosition, ppm, moveDelay);
     }
 
-    doComputerFirstMoveDummy() {
+    doComputerFirstMoveDummy(moveDelay) {
         let qtdTotal = 0;
         for (let position = 0; position < GameDefintions.NUM_ROWS; position++) {
             if (this.turnInfo.piecesPossibleMoves[position]) {
@@ -326,7 +376,7 @@ export class Game extends React.Component {
                     iPos += 1;
                     if (iPos === moveChosen + 1) {
                         this.turnInfo.registerComputerPlay(ppm);
-                        this.doComputerDrag(position, ppm);
+                        this.doComputerDrag(position, ppm, moveDelay);
                         return;
                     }
                 }
@@ -334,13 +384,16 @@ export class Game extends React.Component {
         }
     }
 
-    doComputerPlay(computerLevel) {
-        if (this.turnInfo.currentStep === 1) {
-            this.doComputerFirstMove(computerLevel);
-        } else {
-            const ppm = this.turnInfo.computerPlayerChoice.ppm;
-            this.doComputerDrag(ppm.moves[this.currentStep - 1], ppm);
-        }
+    doComputerPlay(computerLevel, moveDelay) {
+        setTimeout(() => {
+            if (this.turnInfo.currentStep === 1) {
+                this.doComputerFirstMove(computerLevel, moveDelay);
+            } else {
+                const ppm = this.turnInfo.playerChoice;
+                this.doComputerDrag(ppm.moves[this.turnInfo.currentStep - 1], ppm, moveDelay);
+            }
+        }, 1);
+
     }
 
     doComputerDrag(position, ppm, delay) {
@@ -350,16 +403,44 @@ export class Game extends React.Component {
                 position;
             this.handleMovePiece(dragPosition,
                 ppm.moves[this.turnInfo.currentStep - 1]);
-        }, delay ? delay : 1500);
+        }, delay ? delay : 500);
     }
 
     isLastComputerPosition(position) {
-        return this.turnInfo.lastComputerPosition && this.turnInfo.lastComputerPosition === position;
+        return this.lastTurnInfo && this.lastTurnInfo.lastComputerPosition() && this.lastTurnInfo.lastComputerPosition() === position;
     }
 
     isLastPlayerPosition(position) {
-        return this.turnInfo.lastPlayerPosition && this.turnInfo.lastPlayerPosition === position;
-    }    
+        return this.lastTurnInfo && this.lastTurnInfo.lastPlayerPosition() && this.lastTurnInfo.lastPlayerPosition() === position;
+    }   
+    
+    handleSpecialBackground(position) {
+        if (!this.lastTurnInfo)
+            return null;
+        if (this.lastTurnInfo.playerChoice) {
+            let playerChoise = this.lastTurnInfo.playerChoice;
+            let pieceColor = this.state.pieces[playerChoise.getLastMovePosition()].color;
+            let moveColor = pieceColor === ColorTypes.WHITE ? "#FFC0CB" : 'green';
+            let originalColor = pieceColor === ColorTypes.WHITE ? "#FFB6C1" : 'green';
+            if (playerChoise.piecesCaptured && 
+                playerChoise.piecesCaptured.includes(position)) {
+                    return 'red';
+                }
+            if (playerChoise.moves &&   
+                playerChoise.moves.includes(position)) {
+                    return moveColor;
+                }   
+            if (playerChoise.originalPosition && playerChoise.originalPosition === position) {
+                    return originalColor;
+                }                              
+        }
+        return null;
+    }
+
+    handleReadFileError(e, error) {
+      console.error("FileReader Error: ", error);
+      alert("Erro na leitura do arquivo replay de jogo enviado");
+    }
 
     toogleWindow() {
         this.setState({...this.state, gameWindowMode: this.state.gameWindowMode === 'game-normal-mode' ? "game-window-mode" : "game-normal-mode"});
@@ -416,12 +497,14 @@ export class Game extends React.Component {
                         handleCanDropPiece={this.handleCanDropPiece}
                         handleCanDragPiece={this.handleCanDragPiece}
                         handleMovePiece={this.handleMovePiece}
+                        handleSpecialBackground={this.handleSpecialBackground}
                         whiteIsNext={this.state.whiteIsNext}
                         pieces={this.state.pieces}
                         count={this.state.count}
                         running={this.state.running}
                     />
                     {!this.state.running && <Overlay color="yellow"></Overlay>}      
+                    
                 </div>
                 <div className="game-info clearfix">
                     <p>{status}</p>
@@ -448,15 +531,26 @@ export class Game extends React.Component {
                                 <option value={ComputerLevel.DUMMY}>Dummy</option>
                                 <option value={ComputerLevel.SMART}>Smart</option>
                                 <option value={ComputerLevel.GENIUS}>Genius</option>
+                                <option value={ComputerLevel.GOD}>God</option>
+                            </select><br />
+                            Priorizer<br />
+                            <select name="priorizerStrategy" id="priorizerStrategy"
+                                disabled={this.state.running}
+								className='custom-select2'
+                                value={this.state.priorizerStrategy}
+                                onChange={this.handlePriorizerStrategyChange}>
+                                <option value={PriorizerStrategy.STANDARD}>Standard</option>
+                                <option value={PriorizerStrategy.CLOSEST}>Closest</option>
+                                <option value={PriorizerStrategy.SAFEST}>Safest</option>
                             </select>
-                        </p>
+                        </p>                        
                         : null}
                     <p>{isMobile ? <FaMobileAlt/> : (
                         <div><FaDesktop/> <button className="btn-link" onClick={this.handleShowInfoDesktop}><FaInfoCircle/></button>
                         </div>)}</p>
                     {this.state.gameLoaded ? 
-                        <p><ReplayBar gameReplay={this.gameReplay} onButtonClick={this.handleReplayBarBtClick} /></p> : 
-                        <p><button onClick={this.restartOrResignGame}>{this.state.running ? "Resign" : "Start"}</button><br />{!this.state.running && !winner ? <FileRead onReadFile={this.handleLoadGamePlayed}/> : <FileDownload fileName="checkers.saved.dat" contentFile={this.mountDownloadFileContent}/>}</p>}
+                        <p><ReplayBar disabled={this.gameReplay.currentPlay > 0 && !this.turnInfo.finished} gameReplay={this.gameReplay} onButtonClick={this.handleReplayBarBtClick} /></p> : 
+                        <p><button onClick={this.restartOrResignGame}>{this.state.running ? "Resign" : "Start"}</button><br />{!this.state.running && !winner ? <FileRead onReadFile={this.handleLoadGamePlayed} onError={this.handleReadFileError}/> : <FileDownload fileName="checkers.saved.dat" contentFile={this.mountDownloadFileContent}/>}</p>}
                 </div>
                 <div className="game-footer clearfix">
                     <span>Created by<br /><b>Tiago Peterlevitz Zini</b></span>

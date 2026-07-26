@@ -532,16 +532,6 @@ export class Game extends React.Component {
                                 <option value={ComputerLevel.SMART}>Smart</option>
                                 <option value={ComputerLevel.GENIUS}>Genius</option>
                                 <option value={ComputerLevel.GOD}>God</option>
-                            </select><br />
-                            Priorizer<br />
-                            <select name="priorizerStrategy" id="priorizerStrategy"
-                                disabled={this.state.running}
-								className='custom-select2'
-                                value={this.state.priorizerStrategy}
-                                onChange={this.handlePriorizerStrategyChange}>
-                                <option value={PriorizerStrategy.STANDARD}>Standard</option>
-                                <option value={PriorizerStrategy.CLOSEST}>Closest</option>
-                                <option value={PriorizerStrategy.SAFEST}>Safest</option>
                             </select>
                         </p>                        
                         : null}
